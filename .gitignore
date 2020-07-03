@@ -3,3 +3,7 @@
 ################################################################################
 
 /.vs
+/GenesisEdit/obj
+/GenesisEdit/bin/Debug
+/GenesisEditTests/bin/Debug
+/GenesisEditTests/obj
