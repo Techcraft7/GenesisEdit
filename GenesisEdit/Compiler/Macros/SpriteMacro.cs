@@ -12,7 +12,7 @@ namespace GenesisEdit.Compiler.Macros
 		// Dictionary for Operator -> Instruction mappings
 		private static readonly Dictionary<string, string> OPERATORS = new Dictionary<string, string>()
 		{
-			{ "=", "MOVE%SIZE%" },
+			{ "=", "MOVE" },
 			{ "+=", "ADD" },
 			{ "-=", "SUB" },
 			{ "*=", "MUL" },
@@ -31,7 +31,7 @@ namespace GenesisEdit.Compiler.Macros
 			{
 				case 5:
 					// Syntax: SPRITE [XY] (=|+=|-=|*=|/=) <VALUE> [BWL][SU]
-					Console.WriteLine("Using XY manipulation submacro");
+					Utils.Log("Using XY manipulation submacro");
 					string name = args[0];
 					string coord = args[1].ToUpper();
 					string operation = args[2];
@@ -40,7 +40,7 @@ namespace GenesisEdit.Compiler.Macros
 					List<Func<bool>> validators = new List<Func<bool>>()
 					{
 						() => new string[] { "X", "Y" }.Contains(coord),
-						() => new string[] { "=", "+=", "-=", "*=", "/=" }.Contains(operation),
+						() => OPERATORS.Keys.Contains(operation),
 						() => Compiler.IsValidValue(value),
 						() => mode.Length == 2 && new char[] { 'B', 'W', 'L' }.Contains(mode[0]) && new char[] { 'S', 'U' }.Contains(mode[1])
 					};
@@ -51,9 +51,9 @@ namespace GenesisEdit.Compiler.Macros
 					string opCode = OPERATORS[operation];
 					string src = Compiler.GetRealVariableName(value);
 					string dst = $"GE_SPRITE_{name}_{coord}";
-					return $"{opCode}{("*=/=".Contains(opCode) ? mode[1].ToString() : string.Empty)}.{mode[0]} {src},{dst}";
+					return $"{opCode}{("*=/=".Contains(operation) ? mode[1].ToString() : string.Empty)}.{mode[0]} {src},{dst}";
 				case 3:
-					Console.WriteLine("Using DIR manipulation submacro");
+					Utils.Log("Using DIR manipulation submacro");
 					switch(args[1])
 					{
 						case "DIR":

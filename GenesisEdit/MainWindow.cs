@@ -174,7 +174,7 @@ namespace GenesisEdit
 					}
 					catch
 					{
-						Console.WriteLine("Error loading theme!");
+						Utils.Log("Error loading theme!");
 						return;
 					}
 					//Convert to black and white and if it is below a threshold use white text to make it readable

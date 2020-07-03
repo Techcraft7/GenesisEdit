@@ -18,12 +18,11 @@ namespace GenesisEdit.Compiler.Macros
 				{
 					if (line.Substring(1).ToUpper().StartsWith(GetPrefix().ToUpper()))
 					{
-						string compiled = CompileMacro(line);
-						lines[i] = compiled;
+						lines[i] = CompileMacro(line);
 					}
 				}
 			}
-			return string.Join("\n", lines);
+			return string.Join("\n", lines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray());
 		}
 
 		internal string[] GetArgs(string macro)
@@ -38,7 +37,7 @@ namespace GenesisEdit.Compiler.Macros
 				List<string> l = macro.Split(' ').ToList();
 				l = l.Skip(1).Select(s => s.EndsWith("%") ? s.Substring(0, s.Length - 1) : s).ToList();
 				l.RemoveAll(v => string.IsNullOrWhiteSpace(v));
-				return l.ToArray().Select(a => Utils.RemovePadding(a)).Where(a => !string.IsNullOrWhiteSpace(a)).ToArray();
+				return l.ToArray().Select(a => Utils.RemovePadding(a)).Where(a => !string.IsNullOrWhiteSpace(a)).Select(a => a ?? string.Empty).ToArray();
 			}
 			throw new InvalidOperationException("Invalid macro!");
 		}

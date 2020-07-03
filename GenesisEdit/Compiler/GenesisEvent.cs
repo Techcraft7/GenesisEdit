@@ -26,6 +26,7 @@ namespace GenesisEdit.Compiler
 
 		public string Compile(List<Variable> vars)
 		{
+			Utils.Log($"Compiling event: {Name}");
 			string output = Compiler.CompileMacros(Code);
 			output = Compiler.ReplaceVars(output, vars);
 			return output;

@@ -13,10 +13,11 @@ namespace GenesisEdit.Compiler.Macros
 	{
 		public override string Compile(string code)
 		{
+			Utils.Log($"Compiling \"{GetPrefix()}\" Macro");
 			string[] lines = code.Replace("\r", string.Empty).Split('\n');
 			Stack<Tuple<int, int>> blocks = new Stack<Tuple<int, int>>();
 			List<Tuple<int, int>> closed = new List<Tuple<int, int>>();
-			Console.WriteLine($"Building \"{GetPrefix()}\" Block Stack");
+			Utils.Log("Building block stack");
 			for (int i = 0; i < lines.Length; i++)
 			{
 				string line = Utils.RemovePadding(lines[i]);
@@ -25,7 +26,6 @@ namespace GenesisEdit.Compiler.Macros
 					// If the part after the % starts with the prefix
 					if (line.Substring(1).ToUpper().StartsWith(GetPrefix().ToUpper()))
 					{
-						Console.WriteLine($"Push line {i + 1}: {line}");
 						blocks.Push(new Tuple<int, int>(i, -1));
 					}
 					else if (line.Substring(1).ToUpper().StartsWith(GetSuffix().ToUpper()))
@@ -34,7 +34,6 @@ namespace GenesisEdit.Compiler.Macros
 						{
 							throw new CompilerException(i, $"\"{GetPrefix()}\" macro ended without a start");
 						}
-						Console.WriteLine($"Pop line {i + 1}: {line}");
 						closed.Add(new Tuple<int, int>(blocks.Pop().Item1, i));
 					}
 				}
@@ -43,24 +42,28 @@ namespace GenesisEdit.Compiler.Macros
 			{
 				throw new CompilerException($"\"{GetPrefix()}\" macro had no closer");
 			}
-			Console.WriteLine("Compiling blocks");
+			Utils.Log("Checking if any blocks were found");
+			//Exit recursion
+			if (closed.Count == 0)
+			{
+				Utils.Log($"Done compiling block macro \"{GetPrefix()}\"");
+				return code;
+			}
 			// Convert to text
 			// Sort by number of blocks inside, the inner most blocks should be first
-			Dictionary<Tuple<int, int>, string> closed2 = closed.OrderByDescending(b => Compiler.CountBlocks(string.Join("\n", lines.Skip(b.Item1).Take(b.Item2 - b.Item1 + 1)), GetPrefix(), GetSuffix(), false)).ToDictionary(t => t, t => string.Join("\n", lines.Skip(t.Item1).Take(t.Item2 - t.Item1 + 1)));
+			Block first = closed.OrderBy(b => Compiler.CountBlocks(string.Join("\n", lines.Skip(b.Item1).Take(b.Item2 - b.Item1 + 1)), false)).ToDictionary(t => t, t => string.Join("\n", lines.Skip(t.Item1).Take(t.Item2 - t.Item1 + 1))).First();
 			// replace blocks
-			foreach (Block kv in closed2)
+			string comp = CompileMacro(first.Value);
+			string compiled = CompileMacro(first.Value);
+			lines[first.Key.Item1] = compiled;
+			for (int i = first.Key.Item1 + 1; i <= first.Key.Item2; i++)
 			{
-				string compiled = CompileMacro(kv.Value);
-				// set line in
-				lines[kv.Key.Item1] = compiled;
-				// replace extra lines with empty lines, will be removed later
-				for (int i = kv.Key.Item1 + 1; i <= kv.Key.Item2; i++)
-				{
-					lines[i] = string.Empty;
-				}
+				lines[i] = string.Empty;
 			}
-			lines = lines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-			return string.Join("\n", lines);
+			//Compile next blocks recursively
+			Utils.Log("Found sub-blocks! Compiling recursively");
+			string ret = string.Join("\n", lines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray());
+			return Compile(ret);
 		}
 
 		public abstract string GetSuffix();

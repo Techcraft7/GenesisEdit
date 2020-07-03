@@ -71,6 +71,7 @@
     <Compile Include="Compiler\CompilerException.cs" />
     <Compile Include="Compiler\Macros\BlockMacro.cs" />
     <Compile Include="Compiler\Compiler.cs" />
+    <Compile Include="Compiler\Macros\IfModeMacro.cs" />
     <Compile Include="Compiler\Macros\SpriteMacro.cs" />
     <Compile Include="Controls\EventControl.cs">
       <SubType>UserControl</SubType>

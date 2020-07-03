@@ -111,22 +111,34 @@ namespace GenesisEditTests
 		[TestMethod]
 		public void MacroTests()
 		{
-			Console.WriteLine("IF MACRO:");
+			Console.WriteLine("IF MACRO:\n");
 			IfStatementMacro if_m = new IfStatementMacro();
-			Console.WriteLine(if_m.Compile(
-@"%IF PY == *A0%
+			string if_m_code =
+@"%IF PY <= *A0%
 	MOVE.W	#69,D0
-	%IF PX == *D0%
-		MOVE.W #$1337, D1
+	%IF PX == D0%
+		MOVE.W #$1337,D1
 	%ENDIF%
 %ENDIF%
-%IF AAAA == *A7%
-	MOVE.W #$1337, D1
+%IF AAAA > *A7%
+	MOVE.W #$1337,D1
+%ELSE%
+	MOVE.W #$CAFE,D2
 %ENDIF%
-MOVE.L	#42,D2"));
+MOVE.L	#42,D2";
+			Console.WriteLine($"\nOUTPUT: {{\n{if_m.Compile(if_m_code)}\n}}\n");
 			SpriteMacro s_m = new SpriteMacro();
 			Console.WriteLine("\nSPRITE MACRO:");
-			Console.WriteLine(s_m.Compile("%SPRITE PLAYER X = D0%"));
+			Console.WriteLine(s_m.Compile("%SPRITE PLAYER X *= *A0 WS%"));
+
+			IfModeMacro ifm_m = new IfModeMacro();
+			Console.WriteLine("\nIF MODE MACRO:");
+			_ = ifm_m.Compile("%IFMODE UNSIGNED%");
+			Console.WriteLine("Should be in unsigned mode:");
+			Console.WriteLine(IfStatementMacro.SignedMode);
+			_ = ifm_m.Compile("%IFMODE SIGNED%");
+			Console.WriteLine("Should be in signed mode:");
+			Console.WriteLine(IfStatementMacro.SignedMode);
 		}
 	}
 }

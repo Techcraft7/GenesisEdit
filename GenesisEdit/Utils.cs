@@ -1,8 +1,11 @@
-﻿using GenesisEdit.Properties;
+﻿using GenesisEdit.Compiler;
+using GenesisEdit.Properties;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,8 +17,16 @@ namespace GenesisEdit
 	{
 		// Regexes
 		public static readonly Regex MACRO_IDENTIFIER = new Regex("%\\w+ ", RegexOptions.Multiline);
-		private static readonly Regex SPLIT_BY_DOT = new Regex(".", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-		private static readonly Regex SPLIT_BY_BACKSLASH_S = new Regex("\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+		public static readonly Regex SPLIT_BY_DOT = new Regex(".", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+		public static readonly Regex SPLIT_BY_BACKSLASH_S = new Regex("\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+		public static readonly Dictionary<EventType, string> EVENT_REPLACERS = new Dictionary<EventType, string>()
+		{
+			{ EventType.ON_USER_INIT, "%GE_INIT%" },
+			{ EventType.ON_TICK, "%GE_ONTICK%" },
+			{ EventType.ON_VBI, "%GE_ONVBI%" },
+			{ EventType.ON_PRESS, null }, //Not implemented yet
+		};
 
 		public static string[] SplitByRegex(Regex r, string s)
 		{
@@ -40,6 +51,8 @@ namespace GenesisEdit
 			Tuple<bool, bool> isGrayscale = colors.Select(l => new Tuple<bool, bool>(l.Distinct().Count() == 1, l.Sum() / 3 < 128)).First();
 			return (Settings.Default.UseVibrantColors && !(isGrayscale.Item1 && isGrayscale.Item2)) ? Color.FromArgb(c.A, c.R + 31, c.G + 31, c.B + 31) : c;
 		}
+
+		public static void Log(string v) => Console.WriteLine($"[{new StackTrace().GetFrame(1).GetMethod().DeclaringType.Name.ToUpper()}] {v}");
 
 		public static Color FromUShort(ushort v)
 		{
@@ -94,7 +107,7 @@ namespace GenesisEdit
 		public static IEnumerable<T> SkipFirstAndLast<T>(IEnumerable<T> list, int num) => SkipLast(list.Skip(num), num);
 		public static IEnumerable<T> TakeFirstAndLast<T>(IEnumerable<T> list, int num) => TakeLast(list.Take(num), num);
 
-		private static string[] GetLines(string s) => s.Replace("\r", string.Empty).Split('\n');
+		public static string[] GetLines(string s) => s.Replace("\r", string.Empty).Split('\n');
 
 		public static string FirstLine(string s)
 		{
