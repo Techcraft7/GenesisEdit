@@ -14,8 +14,7 @@ namespace GenesisEdit.Compiler
 	}
 	internal abstract class Variable : ICompileable<object>
 	{
-		public object Value;
-		private int length;
+		public int Length { get; private set }
 		public string Name
 		{
 			get => name;

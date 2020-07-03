@@ -43,9 +43,6 @@ namespace GenesisEdit.Compiler
 		A,
 		B,
 		C,
-		X,
-		Y,
-		Z,
 		START
 	}
 

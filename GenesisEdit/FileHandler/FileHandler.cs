@@ -40,7 +40,7 @@ namespace GenesisEdit.FIleHandler
 			Dictionary<string, string> iniVars = new Dictionary<string, string>();
 			foreach (Variable v in vars)
 			{
-				iniVars.Add(v.Name, $"{v.GetVariableType().ToString().ToUpper()}");
+				iniVars.Add(v.Name, $"{v.GetVariableType().ToString().ToUpper()}|{v.Length}");
 			}
 			file.AddSection(new INISection("Variables", iniVars));
 			//Write events

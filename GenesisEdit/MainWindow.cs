@@ -76,6 +76,14 @@ namespace GenesisEdit
 				{ EventsList, new DoublePoint(0.33333, -1) }
 			};
 
+			foreach (Control c in Controls)
+			{
+				if (c.GetType().IsSubclassOf(typeof(ComboBox)))
+				{
+					((ComboBox)c).SelectedIndex = 0;
+				}
+			}
+
 			//Update
 			MainWindow_Resize(null, null);
 			UpdateEvents();

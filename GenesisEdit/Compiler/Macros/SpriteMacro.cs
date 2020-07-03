@@ -27,40 +27,44 @@ namespace GenesisEdit.Compiler.Macros
 			{
 				args[i] = args[i] ?? string.Empty;
 			}
+			string name = args[0];
 			switch (args.Length)
 			{
 				case 5:
-					// Syntax: SPRITE [XY] (=|+=|-=|*=|/=) <VALUE> [BWL][SU]
+					// Syntax: %SPRITE <NAME> [XY] (=|+=|-=|*=|/=) <VALUE> [BWL][SU]%
 					Utils.Log("Using XY manipulation submacro");
-					string name = args[0];
-					string coord = args[1].ToUpper();
-					string operation = args[2];
-					string value = args[3];
-					string mode = args[4]; //(B, W, or L) + (S or U)
+					string xy_coord = args[1].ToUpper();
+					string xy_operation = args[2];
+					string xy_value = args[3];
+					string xy_mode = args[4]; //(B, W, or L) + (S or U)
+					List<Func<bool>> xy_validators = new List<Func<bool>>()
+					{
+						() => new string[] { "X", "Y" }.Contains(xy_coord),
+						() => OPERATORS.Keys.Contains(xy_operation),
+						() => Compiler.IsValidValue(xy_value),
+						() => xy_mode.Length == 2 && new char[] { 'B', 'W', 'L' }.Contains(xy_mode[0]) && new char[] { 'S', 'U' }.Contains(xy_mode[1])
+					};
+					if (!Utils.Validate(xy_validators))
+					{
+						ThrowBecauseOfInvalidMacro();
+					}
+					string opCode = OPERATORS[xy_operation];
+					string src = Compiler.GetRealVariableName(xy_value);
+					string dst = $"GE_SPRITE_{name}_{xy_coord}";
+					return $"{opCode}{("*=/=".Contains(xy_operation) ? xy_mode[1].ToString() : string.Empty)}.{xy_mode[0]} {src},{dst}";
+				case 3:
+					// Syntax: %SPRITE <NAME> DIR <VALUE>%
+					Utils.Log("Using DIR manipulation submacro");
 					List<Func<bool>> validators = new List<Func<bool>>()
 					{
-						() => new string[] { "X", "Y" }.Contains(coord),
-						() => OPERATORS.Keys.Contains(operation),
-						() => Compiler.IsValidValue(value),
-						() => mode.Length == 2 && new char[] { 'B', 'W', 'L' }.Contains(mode[0]) && new char[] { 'S', 'U' }.Contains(mode[1])
+						() => args[1].ToUpper().Equals("DIR"),
+						() => new string[] { "LEFT", "RIGHT" }.Contains(args[2].ToUpper())
 					};
 					if (!Utils.Validate(validators))
 					{
 						ThrowBecauseOfInvalidMacro();
 					}
-					string opCode = OPERATORS[operation];
-					string src = Compiler.GetRealVariableName(value);
-					string dst = $"GE_SPRITE_{name}_{coord}";
-					return $"{opCode}{("*=/=".Contains(operation) ? mode[1].ToString() : string.Empty)}.{mode[0]} {src},{dst}";
-				case 3:
-					Utils.Log("Using DIR manipulation submacro");
-					switch(args[1])
-					{
-						case "DIR":
-							return "";
-					}
-					ThrowBecauseOfInvalidMacro();
-					break;		
+					return "MOVE.";
 			}
 			throw new CompilerException($"SPRITE Macro had the wrong number of arguments");
 		}

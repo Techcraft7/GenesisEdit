@@ -59,11 +59,6 @@
 			// 
 			this.TypeSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.TypeSel.FormattingEnabled = true;
-			this.TypeSel.Items.AddRange(new object[] {
-            "On User Init",
-            "On Tick",
-            "On VBI",
-            "On Press"});
 			this.TypeSel.Location = new System.Drawing.Point(101, 9);
 			this.TypeSel.MaxDropDownItems = 100;
 			this.TypeSel.Name = "TypeSel";
@@ -75,19 +70,6 @@
 			// 
 			this.ButtonSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.ButtonSel.FormattingEnabled = true;
-			this.ButtonSel.Items.AddRange(new object[] {
-            "None",
-            "Up",
-            "Down",
-            "Left",
-            "Right",
-            "A",
-            "B",
-            "C",
-            "X",
-            "Y",
-            "Z",
-            "Start"});
 			this.ButtonSel.Location = new System.Drawing.Point(183, 9);
 			this.ButtonSel.MaxDropDownItems = 100;
 			this.ButtonSel.Name = "ButtonSel";

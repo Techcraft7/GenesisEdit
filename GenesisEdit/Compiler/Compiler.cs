@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace GenesisEdit.Compiler
 {
@@ -14,13 +17,30 @@ namespace GenesisEdit.Compiler
 		// Regexes
 		private static readonly Regex REGISTER_REGEX = new Regex("(\\*?A[0-7])|(D[0-7])");
 		private static readonly Regex NUMBER_REGEX = new Regex("(0x[0-9A-F]+)|([0-9]+)", RegexOptions.IgnoreCase);
-		// Command line args to be passed in to the assembler
+		// Assembler process things
 		private static readonly Tuple<string, string> ASM_CMD = new Tuple<string, string>("asm68k.exe", "/p /i /w /ov+ /oos+ /oop+ /oow+ /ooz+ /ooaq+ /oosq+ /oomq+ /ow+ %NAME%.S,%NAME%.BIN,%NAME%");
+		private static readonly Process ASSEMBLER;
+		private static string ASM_STDOUT_BUF;
 		// Macros to compile
 		private static readonly Macro[] MACROS = new Macro[] { new IfStatementMacro(), new SpriteMacro(), new IfModeMacro() };
 
 		//Put block macros first, then non-blocks after
-		static Compiler() => MACROS = MACROS.OrderByDescending(m => Convert.ToBoolean(m.GetType().IsSubclassOf(typeof(BlockMacro)))).ToArray();
+		static Compiler()
+		{
+			MACROS = MACROS.OrderByDescending(m => Convert.ToBoolean(m.GetType().IsSubclassOf(typeof(BlockMacro)))).ToArray();
+			ASSEMBLER = new Process()
+			{
+				StartInfo = new ProcessStartInfo()
+				{
+					FileName = ASM_CMD.Item1,
+					Arguments = ASM_CMD.Item2,
+					UseShellExecute = false,
+					CreateNoWindow = true,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true
+				}
+			};
+		}
 
 		public static void Compile(List<GenesisEvent> events, List<Variable> variables)
 		{
@@ -32,27 +52,39 @@ namespace GenesisEdit.Compiler
 				toCompile.Add(type, events.Where(e => e.Type.Equals(type)).ToArray());
 			}
 			Dictionary<EventType, string[]> compiled = toCompile.ToDictionary(kv => kv.Key, kv => kv.Value.Select(e => e.Compile(variables)).ToArray());
+			Utils.Log($"Compiling Sprites");
 			Utils.Log($"Filling in templates");
 			Utils.Log($"Filling in Code Template");
 			Utils.Log($"Filling in System Template");
 			Utils.Log($"Assembling");
-			ProcessStartInfo psi = new ProcessStartInfo()
-			{
-				FileName = ASM_CMD.Item1,
-				Arguments = ASM_CMD.Item2,
-				UseShellExecute = false,
-				CreateNoWindow = true,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true
-			};
-			Process p = new Process()
-			{
-				StartInfo = psi
-			};
+			RunAssembler();
 			Utils.Log($"Done!");
 			long ms2 = DateTime.Now.Ticks / 10000;
 			Utils.Log($"Compiler finished in {((double)ms2 - ms) / 1000D} seconds");
 		}
+
+		private static void RunAssembler()
+		{
+			Task.Run(() =>
+			{
+				ASM_STDOUT_BUF = string.Empty;
+				ASSEMBLER.OutputDataReceived += ASSEMBLER_OutputDataReceived;
+				ASSEMBLER.Start();
+				ASSEMBLER.WaitForExit();
+				Utils.Log("Output:");
+				Utils.Log(ASM_STDOUT_BUF);
+				string[] lines = Utils.GetLines(ASM_STDOUT_BUF);
+				const string ERROR_IDENTIFIER = ": Error :";
+				if (lines.Any(l => l.Contains(ERROR_IDENTIFIER)))
+				{
+					throw new CompilerException($"Assembler failed!\n{string.Join("\n", lines.Where(l => l.Contains(ERROR_IDENTIFIER)))}");
+				}
+			});
+		}
+
+		private static void ASSEMBLER_OutputDataReceived(object sender, DataReceivedEventArgs e) => OnData(e.Data, ref ASM_STDOUT_BUF);
+
+		private static void OnData(string data, ref string buf) => buf += data;
 
 		public static string CompileMacros(string code)
 		{
@@ -84,7 +116,7 @@ namespace GenesisEdit.Compiler
 		public static int CountBlocks(string code, bool countFirst = true)
 		{
 			int maxBlocks = 0;
-			int blocks = 0; 
+			int blocks = 0;
 			string[] lines = code.Replace("\r", string.Empty).Split('\n');
 			foreach (BlockMacro bm in MACROS.Where(m => m.GetType().IsSubclassOf(typeof(BlockMacro))))
 			{

@@ -83,15 +83,15 @@ namespace GenesisEdit.Compiler.Macros
 				//CMP args[2],args[0]
 				//Bcc label
 				//split[0] ;if true
-				//JMP label2
+				//BRA label2
 				//label:
 				//split[1] ;if false
 				//label2:
-				return $"CMP {op1},{op2}\n{comparer} {label}\n{split[0]}\nJMP {label2}\n{label}:\n{split[1]}\n{label2}:\n";
+				return $"CMP {op1},{op2}\n{comparer} {label}\n{split[0]}\nBRA {label2}\n{label}:\n{split[1]}\n{label2}:\n";
 			}
 			//CMP args[2],args[0]
 			//Bcc label
-			//inside ;inside
+			//inside
 			//label:
 			return $"CMP {op1},{op2}\n{comparer} {label}\n{inside}\n{label}:\n";
 		}

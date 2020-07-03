@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Button = GenesisEdit.Compiler.Button;
 
 namespace GenesisEdit.Controls
 {
@@ -22,12 +23,25 @@ namespace GenesisEdit.Controls
 			Event = new GenesisEvent(EventType.ON_TICK, $"Event_{new Random().Next():X}");
 			InitializeComponent();
 			NameBox.Text = Event.Name;
-			TypeSel.SelectedIndex = (int)Event.Type;
-			ButtonSel.SelectedIndex = (int)Event.Button;
+
 			foreach (Control c in Controls)
 			{
 				ratios.Add(c, new Tuple<double, double>((double)c.Width / Width, (double)c.Location.X / Width));
 			}
+
+			foreach (Button b in Enum.GetValues(typeof(Button)))
+			{
+				ButtonSel.Items.Add(Utils.FormatEnum(b.ToString()));
+			}
+
+			foreach (EventType et in Enum.GetValues(typeof(EventType)))
+			{
+				TypeSel.Items.Add(Utils.FormatEnum(et.ToString()));
+			}
+
+			TypeSel.SelectedIndex = (int)Event.Type;
+			ButtonSel.SelectedIndex = (int)Event.Button;
+
 			EventControl_Resize(null, null);
 		}
 
@@ -65,9 +79,6 @@ namespace GenesisEdit.Controls
 			Event.Name = NameBox.Text;
 		}
 
-		private void Resizer_Tick(object sender, EventArgs e)
-		{
-			EventControl_Resize(null, null);
-		}
+		private void Resizer_Tick(object sender, EventArgs e) => EventControl_Resize(null, null);
 	}
 }
