@@ -39,8 +39,8 @@ namespace GenesisEdit.Controls
 				TypeSel.Items.Add(Utils.FormatEnum(et.ToString()));
 			}
 
-			TypeSel.SelectedIndex = (int)Event.Type;
-			ButtonSel.SelectedIndex = (int)Event.Button;
+			TypeSel.SelectedIndex = 0;
+			ButtonSel.SelectedIndex = 0;
 
 			EventControl_Resize(null, null);
 		}
@@ -59,7 +59,8 @@ namespace GenesisEdit.Controls
 			if (Parent != null)
 			{
 				MinimumSize = new Size(0, 40);
-				MaximumSize = new Size(Parent.Width - 10, 40);
+				MaximumSize = new Size(Parent.Width - 25, 40);
+				Margin = new Padding(0);
 				Width = Parent.Width;
 			}
 			foreach (KeyValuePair<Control, Tuple<double, double>> c in ratios)
@@ -71,12 +72,26 @@ namespace GenesisEdit.Controls
 
 		private void NameBox_TextChanged(object sender, EventArgs e)
 		{
-			if (!Utils.IsValidIdentifier(NameBox.Text))
+			if (!Utils.IsValidIdentifier(NameBox.Text) && !NameBox.Text.Equals(string.Empty))
 			{
 				Event.Name = $"Event_{new Random().Next():X}";
+				NameBox.Text = Event.Name;
 				return;
 			}
 			Event.Name = NameBox.Text;
+			MainWindow.EVENT_LIST_STALE = true;
+		}
+
+		private void TypeSel_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			MainWindow.EVENT_LIST_STALE = true;
+			Event.Button = (Button)ButtonSel.SelectedIndex;
+		}
+
+		private void ButtonSel_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			MainWindow.EVENT_LIST_STALE = true;
+			Event.Type = (EventType)TypeSel.SelectedIndex;
 		}
 
 		private void Resizer_Tick(object sender, EventArgs e) => EventControl_Resize(null, null);

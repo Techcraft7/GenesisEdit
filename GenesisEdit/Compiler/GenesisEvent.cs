@@ -7,7 +7,7 @@ namespace GenesisEdit.Compiler
 	internal class GenesisEvent : ICompileable<List<Variable>>
 	{
 		public EventType Type;
-		public Button Button;
+		public Button Button = Button.NONE;
 		public string Name;
 		public string Code
 		{
@@ -43,7 +43,7 @@ namespace GenesisEdit.Compiler
 		A,
 		B,
 		C,
-		START
+		SELECT
 	}
 
 	internal enum EventType

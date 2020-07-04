@@ -10,6 +10,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace GenesisEdit
 {
@@ -25,7 +26,7 @@ namespace GenesisEdit
 			{ EventType.ON_USER_INIT, "%GE_INIT%" },
 			{ EventType.ON_TICK, "%GE_ONTICK%" },
 			{ EventType.ON_VBI, "%GE_ONVBI%" },
-			{ EventType.ON_PRESS, null }, //Not implemented yet
+			{ EventType.ON_PRESS, "%GE_ON_PRESS_{0}%" }
 		};
 
 		public static string[] SplitByRegex(Regex r, string s)
@@ -34,6 +35,52 @@ namespace GenesisEdit
 			s = s ?? throw new ArgumentNullException(nameof(s));
 			return r.Split(s);
 		}
+
+		public static int GetARGB(Color c) => (c.A << 24) | (c.R << 16) | (c.G << 8) | c.B;
+
+		public static bool ValidateColors(Bitmap b)
+		{
+			List<Color> colors = new List<Color>();
+			b = b ?? throw new ArgumentNullException(nameof(b));
+			for (int x = 0; x < b.Width; x++)
+			{
+				for (int y = 0; y < b.Height; y++)
+				{
+					Color c = b.GetPixel(x, y);
+					if (c.A < 255)
+					{
+						c = Color.Transparent;
+					}
+					if (!colors.Select(v => GetARGB(v)).Contains(GetARGB(c)))
+					{
+						colors.Add(c);
+					}
+					if (colors.Count > 16)
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		public static Bitmap ReplaceTransparency(Bitmap b, Color c)
+		{
+			b = b ?? throw new ArgumentNullException(nameof(b));
+			for (int x = 0; x < b.Width; x++)
+			{
+				for (int y = 0; y < b.Height; y++)
+				{
+					if (b.GetPixel(x, y).A < 255)
+					{
+						b.SetPixel(x, y, c);
+					}
+				}
+			}
+			return b;
+		}
+
+		public static DialogResult AutoException(Exception e, bool stackTrace = true) => MessageBox.Show($"Error: {e.GetType()} - {e.Message}{(stackTrace ? $"\n{e.StackTrace}" : string.Empty)}", "Genesis Edit");
 
 		public static string[] SplitByWhiteSpace(string s, bool includeNewLines = false)
 		{
@@ -52,7 +99,7 @@ namespace GenesisEdit
 			return (Settings.Default.UseVibrantColors && !(isGrayscale.Item1 && isGrayscale.Item2)) ? Color.FromArgb(c.A, c.R + 31, c.G + 31, c.B + 31) : c;
 		}
 
-		public static void Log(string v) => Console.WriteLine($"[{new StackTrace().GetFrame(1).GetMethod().DeclaringType.Name.ToUpper()}] {v}");
+		public static void Log(string v) => Console.WriteLine($"[{new StackTrace().GetFrame(1).GetMethod().DeclaringType.Name}] {v}");
 
 		public static Color FromUShort(ushort v)
 		{
@@ -88,7 +135,7 @@ namespace GenesisEdit
 
 		public static bool IsINIHeader(string v)
 		{
-			string noPad = Utils.RemovePadding(v);
+			string noPad = RemovePadding(v);
 			return noPad.StartsWith("[") && noPad.EndsWith("]");
 		}
 
@@ -96,10 +143,10 @@ namespace GenesisEdit
 		{
 			List<Func<string, bool>> funcs = new List<Func<string, bool>>()
 			{
-				new Func<string, bool>(s => s.StartsWith("GE_")),
-				new Func<string, bool>(s => new Regex("[A-Z_]{1}[A-Z_0-9]*", RegexOptions.IgnoreCase).IsMatch(name) == false)
+				new Func<string, bool>(s => !s.StartsWith("GE_")),
+				new Func<string, bool>(s => IsFullMatch(new Regex("[A-Z_]{1}[A-Z_0-9]*", RegexOptions.IgnoreCase), name))
 			};
-			return !funcs.Any(f => f.Invoke(name));
+			return funcs.All(f => f.Invoke(name));
 		}
 
 		public static IEnumerable<T> SkipLast<T>(IEnumerable<T> list, int num) => list.Reverse().Skip(num).Reverse();
@@ -118,8 +165,12 @@ namespace GenesisEdit
 		public static bool Validate(List<Func<bool>> funcs) => funcs.All(f => f.Invoke());
 		public static bool Validate(params Func<bool>[] funcs) => Validate(funcs.ToList());
 
-		public static string RemovePadding(string s) => new string(new string(s.SkipWhile(c => string.IsNullOrEmpty(c.ToString())).ToArray()).Reverse().SkipWhile(c => string.IsNullOrEmpty(c.ToString())).Reverse().ToArray()).Replace("\t", string.Empty);
+		public static string RemovePadding(string s) => new string(new string(s.SkipWhile(c => string.IsNullOrEmpty(c.ToString()) || c.Equals('\t')).ToArray()).Reverse().SkipWhile(c => string.IsNullOrEmpty(c.ToString())).Reverse().ToArray());
 
 		public static bool IsFullMatch(Regex r, string s) => r.Match(s).Value.Length == s.Length;
+
+		//Used for Save/Open File Dialogs
+		public static string AutoFilter(params string[] ext) => string.Join("|", ext.Select(s => $"{s.ToUpper()} Files (*.{s})|*.{s}"));
+
 	}
 }

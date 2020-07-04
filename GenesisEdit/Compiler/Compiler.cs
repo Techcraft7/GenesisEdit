@@ -35,56 +35,86 @@ namespace GenesisEdit.Compiler
 					FileName = ASM_CMD.Item1,
 					Arguments = ASM_CMD.Item2,
 					UseShellExecute = false,
-					CreateNoWindow = true,
 					RedirectStandardOutput = true,
-					RedirectStandardError = true
+					CreateNoWindow = true
 				}
 			};
 		}
 
 		public static void Compile(List<GenesisEvent> events, List<Variable> variables)
 		{
-			long ms = DateTime.Now.Ticks / 10000;
-			Utils.Log("Compiling");
-			Dictionary<EventType, GenesisEvent[]> toCompile = new Dictionary<EventType, GenesisEvent[]>();
-			foreach (EventType type in Enum.GetValues(typeof(EventType)))
+			try
 			{
-				toCompile.Add(type, events.Where(e => e.Type.Equals(type)).ToArray());
+				long ms = DateTime.Now.Ticks / 10000;
+				Utils.Log("Compiling");
+				Dictionary<EventType, GenesisEvent[]> toCompile = new Dictionary<EventType, GenesisEvent[]>();
+				foreach (EventType type in Enum.GetValues(typeof(EventType)))
+				{
+					toCompile.Add(type, events.Where(e => e.Type.Equals(type)).ToArray());
+				}
+				if (toCompile.TryGetValue(EventType.ON_PRESS, out GenesisEvent[] ges))
+				{
+					IEnumerable<GenesisEvent> vs = ges.Where(ge => ge.Button.Equals(Button.NONE));
+					if (vs.Count() != 0)
+					{
+						throw new CompilerException($"Please specify a button for the following events:\n\t{string.Join("\n\t", vs.Select(e => e.Name))}");
+					}
+				}
+				if (toCompile.Select(kv => kv.Value.Select(ge => ge.Name)).Any(l => l.Any(v => !Utils.IsValidIdentifier(v))))
+				{
+					throw new CompilerException("One or more event names were invalid!");
+				}
+				Dictionary<EventType, string[]> compiled = toCompile.ToDictionary(kv => kv.Key, kv => kv.Value.Select(e => e.Compile(variables)).ToArray());
+				Utils.Log($"Compiling Sprites");
+				Utils.Log($"Compiling Palettes");
+				Utils.Log($"Filling in templates");
+				Utils.Log($"Filling in Code Template");
+				Utils.Log($"Filling in System Template");
+				Utils.Log($"Assembling");
+				RunAssembler();
+				Utils.Log($"Assembler exited with code {ASSEMBLER.ExitCode}");
+				CheckAssemblerOutput();
+				Utils.Log($"Done!");
+				long ms2 = DateTime.Now.Ticks / 10000;
+				Utils.Log($"Compiler finished in {((double)ms2 - ms) / 1000D} seconds");
 			}
-			Dictionary<EventType, string[]> compiled = toCompile.ToDictionary(kv => kv.Key, kv => kv.Value.Select(e => e.Compile(variables)).ToArray());
-			Utils.Log($"Compiling Sprites");
-			Utils.Log($"Filling in templates");
-			Utils.Log($"Filling in Code Template");
-			Utils.Log($"Filling in System Template");
-			Utils.Log($"Assembling");
-			RunAssembler();
-			Utils.Log($"Done!");
-			long ms2 = DateTime.Now.Ticks / 10000;
-			Utils.Log($"Compiler finished in {((double)ms2 - ms) / 1000D} seconds");
+			catch (CompilerException e)
+			{
+				_ = MessageBox.Show(e.Message);
+			}
+			catch (Exception e)
+			{
+				_ = MessageBox.Show($"Unexpected error while compiling:\n{e.GetType().Name} - {e.Message}\n{e.StackTrace}");
+			}
+		}
+
+		private static void CheckAssemblerOutput()
+		{
+			Console.WriteLine("Output:");
+			ASM_STDOUT_BUF = ASSEMBLER.StandardOutput.ReadToEnd();
+			Console.WriteLine(ASM_STDOUT_BUF);
+			string[] lines = Utils.GetLines(ASM_STDOUT_BUF);
+			const string ERROR_IDENTIFIER = ": Error :";
+			if (lines.Any(l => l.Contains(ERROR_IDENTIFIER)) || ASSEMBLER.ExitCode != 0)
+			{
+				throw new CompilerException($"Assembler failed!\n{string.Join("\n", lines.Where(l => l.Contains(ERROR_IDENTIFIER)))}");
+			}
 		}
 
 		private static void RunAssembler()
 		{
-			Task.Run(() =>
+			Task t = Task.Run(() =>
 			{
 				ASM_STDOUT_BUF = string.Empty;
-				ASSEMBLER.OutputDataReceived += ASSEMBLER_OutputDataReceived;
 				ASSEMBLER.Start();
 				ASSEMBLER.WaitForExit();
-				Utils.Log("Output:");
-				Utils.Log(ASM_STDOUT_BUF);
-				string[] lines = Utils.GetLines(ASM_STDOUT_BUF);
-				const string ERROR_IDENTIFIER = ": Error :";
-				if (lines.Any(l => l.Contains(ERROR_IDENTIFIER)))
-				{
-					throw new CompilerException($"Assembler failed!\n{string.Join("\n", lines.Where(l => l.Contains(ERROR_IDENTIFIER)))}");
-				}
 			});
+			//Wait for task to complete without freezing UI
+			while (!t.IsCompleted)
+			{
+				MainWindow.INSTACE.Invoke(new Action(() => Application.DoEvents()));
+			}
 		}
-
-		private static void ASSEMBLER_OutputDataReceived(object sender, DataReceivedEventArgs e) => OnData(e.Data, ref ASM_STDOUT_BUF);
-
-		private static void OnData(string data, ref string buf) => buf += data;
 
 		public static string CompileMacros(string code)
 		{

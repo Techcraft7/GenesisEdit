@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
 			this.MainMenu = new System.Windows.Forms.MenuStrip();
 			this.FileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -37,18 +38,21 @@
 			this.RunButton = new System.Windows.Forms.ToolStripMenuItem();
 			this.VariablesButton = new System.Windows.Forms.ToolStripMenuItem();
 			this.PalettesButton = new System.Windows.Forms.ToolStripMenuItem();
-			this.SettingsButton = new System.Windows.Forms.ToolStripMenuItem();
-			this.HelpButton = new System.Windows.Forms.ToolStripMenuItem();
 			this.ROMInfoButton = new System.Windows.Forms.ToolStripMenuItem();
 			this.TitleBox = new System.Windows.Forms.ToolStripTextBox();
 			this.AuthorBox = new System.Windows.Forms.ToolStripTextBox();
 			this.SubtitleBox = new System.Windows.Forms.ToolStripTextBox();
 			this.Subtitle2Box = new System.Windows.Forms.ToolStripTextBox();
 			this.ProdNBox = new System.Windows.Forms.ToolStripTextBox();
+			this.SpritesButton = new System.Windows.Forms.ToolStripMenuItem();
+			this.BackgroundsButton = new System.Windows.Forms.ToolStripMenuItem();
+			this.SettingsButton = new System.Windows.Forms.ToolStripMenuItem();
+			this.HelpButton = new System.Windows.Forms.ToolStripMenuItem();
 			this.CodeBox = new System.Windows.Forms.RichTextBox();
 			this.EventsList = new System.Windows.Forms.FlowLayoutPanel();
 			this.AddEventButton = new System.Windows.Forms.Button();
 			this.EventSel = new System.Windows.Forms.ComboBox();
+			this.EventUpdater = new System.Windows.Forms.Timer(this.components);
 			this.MainMenu.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -60,9 +64,11 @@
             this.RunButton,
             this.VariablesButton,
             this.PalettesButton,
+            this.ROMInfoButton,
+            this.SpritesButton,
+            this.BackgroundsButton,
             this.SettingsButton,
-            this.HelpButton,
-            this.ROMInfoButton});
+            this.HelpButton});
 			this.MainMenu.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this.MainMenu.Location = new System.Drawing.Point(0, 0);
 			this.MainMenu.Name = "MainMenu";
@@ -124,20 +130,6 @@
 			this.PalettesButton.Text = "Palettes";
 			this.PalettesButton.Click += new System.EventHandler(this.PalettesButton_Click);
 			// 
-			// SettingsButton
-			// 
-			this.SettingsButton.Name = "SettingsButton";
-			this.SettingsButton.Size = new System.Drawing.Size(61, 20);
-			this.SettingsButton.Text = "Settings";
-			this.SettingsButton.Click += new System.EventHandler(this.SettingsButton_Click);
-			// 
-			// HelpButton
-			// 
-			this.HelpButton.Name = "HelpButton";
-			this.HelpButton.Size = new System.Drawing.Size(44, 20);
-			this.HelpButton.Text = "Help";
-			this.HelpButton.Click += new System.EventHandler(this.HelpButton_Click);
-			// 
 			// ROMInfoButton
 			// 
 			this.ROMInfoButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -153,7 +145,6 @@
 			// 
 			// TitleBox
 			// 
-			this.TitleBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.TitleBox.MaxLength = 16;
 			this.TitleBox.Name = "TitleBox";
 			this.TitleBox.Size = new System.Drawing.Size(100, 23);
@@ -161,7 +152,6 @@
 			// 
 			// AuthorBox
 			// 
-			this.AuthorBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.AuthorBox.MaxLength = 16;
 			this.AuthorBox.Name = "AuthorBox";
 			this.AuthorBox.Size = new System.Drawing.Size(100, 23);
@@ -169,7 +159,6 @@
 			// 
 			// SubtitleBox
 			// 
-			this.SubtitleBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.SubtitleBox.MaxLength = 48;
 			this.SubtitleBox.Name = "SubtitleBox";
 			this.SubtitleBox.Size = new System.Drawing.Size(100, 23);
@@ -177,7 +166,6 @@
 			// 
 			// Subtitle2Box
 			// 
-			this.Subtitle2Box.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.Subtitle2Box.MaxLength = 48;
 			this.Subtitle2Box.Name = "Subtitle2Box";
 			this.Subtitle2Box.Size = new System.Drawing.Size(100, 23);
@@ -185,11 +173,38 @@
 			// 
 			// ProdNBox
 			// 
-			this.ProdNBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.ProdNBox.MaxLength = 14;
 			this.ProdNBox.Name = "ProdNBox";
 			this.ProdNBox.Size = new System.Drawing.Size(100, 23);
 			this.ProdNBox.Text = "Product #";
+			// 
+			// SpritesButton
+			// 
+			this.SpritesButton.Name = "SpritesButton";
+			this.SpritesButton.Size = new System.Drawing.Size(54, 20);
+			this.SpritesButton.Text = "Sprites";
+			this.SpritesButton.Click += new System.EventHandler(this.SpritesButton_Click);
+			// 
+			// BackgroundsButton
+			// 
+			this.BackgroundsButton.Name = "BackgroundsButton";
+			this.BackgroundsButton.Size = new System.Drawing.Size(88, 20);
+			this.BackgroundsButton.Text = "Backgrounds";
+			this.BackgroundsButton.Click += new System.EventHandler(this.BackgroundsButton_Click);
+			// 
+			// SettingsButton
+			// 
+			this.SettingsButton.Name = "SettingsButton";
+			this.SettingsButton.Size = new System.Drawing.Size(61, 20);
+			this.SettingsButton.Text = "Settings";
+			this.SettingsButton.Click += new System.EventHandler(this.SettingsButton_Click);
+			// 
+			// HelpButton
+			// 
+			this.HelpButton.Name = "HelpButton";
+			this.HelpButton.Size = new System.Drawing.Size(44, 20);
+			this.HelpButton.Text = "Help";
+			this.HelpButton.Click += new System.EventHandler(this.HelpButton_Click);
 			// 
 			// CodeBox
 			// 
@@ -244,6 +259,11 @@
 			this.EventSel.TabIndex = 5;
 			this.EventSel.SelectedIndexChanged += new System.EventHandler(this.EventSel_SelectedIndexChanged);
 			// 
+			// EventUpdater
+			// 
+			this.EventUpdater.Enabled = true;
+			this.EventUpdater.Tick += new System.EventHandler(this.EventUpdater_Tick);
+			// 
 			// MainWindow
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -276,7 +296,6 @@
 		private System.Windows.Forms.RichTextBox CodeBox;
 		private System.Windows.Forms.ToolStripMenuItem VariablesButton;
 		private System.Windows.Forms.ToolStripMenuItem SettingsButton;
-		private System.Windows.Forms.FlowLayoutPanel EventsList;
 		private System.Windows.Forms.ToolStripMenuItem PalettesButton;
 		private System.Windows.Forms.ToolStripMenuItem HelpButton;
 		private System.Windows.Forms.Button AddEventButton;
@@ -287,6 +306,10 @@
 		private System.Windows.Forms.ToolStripTextBox Subtitle2Box;
 		private System.Windows.Forms.ToolStripTextBox ProdNBox;
 		private System.Windows.Forms.ComboBox EventSel;
+		private System.Windows.Forms.Timer EventUpdater;
+		private System.Windows.Forms.FlowLayoutPanel EventsList;
+		private System.Windows.Forms.ToolStripMenuItem SpritesButton;
+		private System.Windows.Forms.ToolStripMenuItem BackgroundsButton;
 	}
 }
 

@@ -54,9 +54,13 @@
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -73,11 +77,18 @@
     <Compile Include="Compiler\Compiler.cs" />
     <Compile Include="Compiler\Macros\IfModeMacro.cs" />
     <Compile Include="Compiler\Macros\SpriteMacro.cs" />
+    <Compile Include="Compiler\Sprite.cs" />
     <Compile Include="Controls\EventControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Controls\EventControl.Designer.cs">
       <DependentUpon>EventControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SpriteControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\SpriteControl.Designer.cs">
+      <DependentUpon>SpriteControl.cs</DependentUpon>
     </Compile>
     <Compile Include="FileHandler\FileHandler.cs" />
     <Compile Include="Compiler\ICompileable.cs" />
@@ -85,6 +96,24 @@
     <Compile Include="FileHandler\INIFile.cs" />
     <Compile Include="Compiler\Macros\IfStatementMacro.cs" />
     <Compile Include="Compiler\Macros\Macro.cs" />
+    <Compile Include="Forms\BackgroundEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\BackgroundEditor.Designer.cs">
+      <DependentUpon>BackgroundEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\HelpWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\HelpWindow.Designer.cs">
+      <DependentUpon>HelpWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\SpriteEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\SpriteEditor.Designer.cs">
+      <DependentUpon>SpriteEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -128,6 +157,18 @@
     </Compile>
     <EmbeddedResource Include="Controls\EventControl.resx">
       <DependentUpon>EventControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\SpriteControl.resx">
+      <DependentUpon>SpriteControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\BackgroundEditor.resx">
+      <DependentUpon>BackgroundEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\HelpWindow.resx">
+      <DependentUpon>HelpWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\SpriteEditor.resx">
+      <DependentUpon>SpriteEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
@@ -190,5 +231,9 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>XCOPY "$(ProjectDir)bin\Debug" "$(SolutionDir)Build" /E /C /Y /F /I
+DEL "$(SolutionDir)Build\*.pdb"</PostBuildEvent>
   </PropertyGroup>
 </Project>

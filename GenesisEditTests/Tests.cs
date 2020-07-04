@@ -115,15 +115,23 @@ namespace GenesisEditTests
 			IfStatementMacro if_m = new IfStatementMacro();
 			string if_m_code =
 @"%IF PY <= *A0%
-	MOVE.W	#69,D0
+	;INSIDE PY <= *A0
+	MOVE.W #69,D0
+	;------
 	%IF PX == D0%
-		MOVE.W #$1337,D1
+		;INSIDE PX == D0
+		MOVE.W	#$1337,D1
+		;------
 	%ENDIF%
 %ENDIF%
-%IF AAAA > *A7%
-	MOVE.W #$1337,D1
+%IF AAAA > A7%
+	;INSIDE AAA > A7
+	MOVE.W	#$1337,D1
+	;------
 %ELSE%
-	MOVE.W #$CAFE,D2
+	;INSIDE ELSE OF AAA > A7
+	MOVE.W	#$CAFE,D2
+	;------
 %ENDIF%
 MOVE.L	#42,D2";
 			Console.WriteLine($"\nOUTPUT: {{\n{if_m.Compile(if_m_code)}\n}}\n");

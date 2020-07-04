@@ -29,9 +29,10 @@ namespace GenesisEdit
 		private static readonly Dictionary<Regex, Color> SYNTAX_COLORS = new Dictionary<Regex, Color>()
 		{
 			{ new Regex("[0-9]+"), Color.FromArgb(184, 215, 163) },
-			{ new Regex("[A-Z_]{1}[A-Z0-9_]*", RegexOptions.Multiline | RegexOptions.IgnoreCase), Color.FromArgb(78, 201, 176) },
-			{ new Regex("[A-Z]{2,4}(\\.[lwb])?\\s+", RegexOptions.Multiline | RegexOptions.IgnoreCase), Color.FromArgb(75, 156, 206) },
-			{ new Regex("[AD][0-9]", RegexOptions.Multiline | RegexOptions.IgnoreCase), Color.FromArgb(181, 93, 47) }
+			{ new Regex("[A-Z_]{1}[A-Z0-9_]*", RegexOptions.IgnoreCase), Color.FromArgb(78, 201, 176) },
+			{ new Regex("[A-Z]{2,4}(\\.[lwb])?\\s+", RegexOptions.IgnoreCase), Color.FromArgb(75, 156, 206) },
+			{ new Regex("[AD][0-9]", RegexOptions.IgnoreCase), Color.FromArgb(241, 120, 0) },
+			{ new Regex(";.+\r?\n", RegexOptions.IgnoreCase), Color.FromArgb(87, 166, 74)}
 		};
 		private static Dictionary<byte, Color> THEME = new Dictionary<byte, Color>()
 		{
@@ -50,20 +51,28 @@ namespace GenesisEdit
 		private List<Variable> Variables => varEditor.GetVariables().ToList();
 		private Color[,] Palettes => palEditor.Palettes;
 		private ROMInfo rom = new ROMInfo();
+		private List<Sprite> Sprites => spriteEditor.Sprites;
 
 
 		//GUIS
 		private readonly SettingsWindow settings = new SettingsWindow();
 		private readonly VarEditor varEditor = new VarEditor();
 		private readonly PalEditor palEditor = new PalEditor();
+		private readonly HelpWindow helpWindow = new HelpWindow();
+		private readonly SpriteEditor spriteEditor = new SpriteEditor();
+		private readonly BackgroundEditor backgroundEditor = new BackgroundEditor();
+
+		public static MainWindow INSTACE;
+		public static bool EVENT_LIST_STALE = false;
 
 		public MainWindow()
 		{
+			INSTACE = this;
 			//Init components
 			InitializeComponent();
 
-			//Save file dialog
-			saveDialog.Filter = "GenesisEdit Files (*.ge)|*.ge";
+			//Save file dialog, allow using of custom INI files because why not
+			saveDialog.Filter = "GenesisEdit Files (*.ge)|*.ge|INI Files (*.ini)|*.ini";
 			saveDialog.Title = "Save file";
 			saveDialog.FileName = "untitled.ge";
 
@@ -76,13 +85,13 @@ namespace GenesisEdit
 				{ EventsList, new DoublePoint(0.33333, -1) }
 			};
 
-			foreach (Control c in Controls)
+			Controls.OfType<ComboBox>().ToList().ForEach(c =>
 			{
-				if (c.GetType().IsSubclassOf(typeof(ComboBox)))
+				if (c.Items.Count > 0)
 				{
-					((ComboBox)c).SelectedIndex = 0;
+					c.SelectedIndex = 0;
 				}
-			}
+			});
 
 			//Update
 			MainWindow_Resize(null, null);
@@ -156,7 +165,7 @@ namespace GenesisEdit
 		private void UpdateTheme()
 		{
 			byte theme = Settings.Default.Theme;
-			foreach (Form f in new Form[] { this, settings, varEditor })
+			foreach (Form f in GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public).Where(f => f.FieldType.IsSubclassOf(typeof(Form))).Select(f => f.GetValue(this)).Concat(new Form[] { this }))
 			{
 				foreach (Control c in f.Controls)
 				{
@@ -279,11 +288,15 @@ namespace GenesisEdit
 			}
 		}
 
-		private void HelpButton_Click(object sender, EventArgs e) => _ = MessageBox.Show("TODO: ADD THIS MESSAGE", Text);
+		private void HelpButton_Click(object sender, EventArgs e) => helpWindow.ShowDialog();
 
 		private void AddEventButton_Click(object sender, EventArgs e) => EventsList.Controls.Add(new EventControl());
 
 		private void ROMInfoButton_DropDownClosed(object sender, EventArgs e) => UpdateROMInfo();
+
+		private void SpritesButton_Click(object sender, EventArgs e) => _ = spriteEditor.ShowDialog();
+
+		private void BackgroundsButton_Click(object sender, EventArgs e) => _ = backgroundEditor.ShowDialog();
 
 		private void UpdateROMInfo()
 		{
@@ -310,6 +323,23 @@ namespace GenesisEdit
 				EventSel.SelectedIndex = 0;
 			}
 			CodeBox.Enabled = Events.Count > 0;
+			List<EventControl> ecs = EventsList.Controls.OfType<EventControl>().ToList();
+			ecs = ecs.OrderBy(c => c.Location.Y).ToList();
+			int j = 0;
+			foreach (EventControl ec in ecs)
+			{
+				ec.Location = new Point(0, j * ec.Height);
+				j++;
+			}
+		}
+
+		private void EventUpdater_Tick(object sender, EventArgs e)
+		{
+			if (EVENT_LIST_STALE)
+			{
+				UpdateEvents();
+				EVENT_LIST_STALE = false;
+			}
 		}
 	}
 }

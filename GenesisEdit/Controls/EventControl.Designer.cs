@@ -65,6 +65,7 @@
 			this.TypeSel.RightToLeft = System.Windows.Forms.RightToLeft.No;
 			this.TypeSel.Size = new System.Drawing.Size(76, 21);
 			this.TypeSel.TabIndex = 2;
+			this.TypeSel.SelectedIndexChanged += new System.EventHandler(this.TypeSel_SelectedIndexChanged);
 			// 
 			// ButtonSel
 			// 
@@ -76,6 +77,7 @@
 			this.ButtonSel.RightToLeft = System.Windows.Forms.RightToLeft.No;
 			this.ButtonSel.Size = new System.Drawing.Size(56, 21);
 			this.ButtonSel.TabIndex = 3;
+			this.ButtonSel.SelectedIndexChanged += new System.EventHandler(this.ButtonSel_SelectedIndexChanged);
 			// 
 			// Resizer
 			// 
@@ -99,11 +101,10 @@
 		}
 
 		#endregion
-
-		private System.Windows.Forms.Button DeleteButton;
 		private System.Windows.Forms.TextBox NameBox;
 		private System.Windows.Forms.ComboBox TypeSel;
 		private System.Windows.Forms.ComboBox ButtonSel;
 		private System.Windows.Forms.Timer Resizer;
+		private System.Windows.Forms.Button DeleteButton;
 	}
 }
