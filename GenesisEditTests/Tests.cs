@@ -8,9 +8,13 @@ using GenesisEdit.FIleHandler;
 using GenesisEdit.Compiler;
 using GenesisEdit.Compiler.Macros;
 using System.Collections.Generic;
+using Resources = GenesisEdit.Resources;
 
 namespace GenesisEditTests
 {
+	/// <summary>
+	/// Tests. Please create the directory C:\tmp\ or these will not work
+	/// </summary>
 	[TestClass]
 	public class Tests
 	{
@@ -104,7 +108,7 @@ namespace GenesisEditTests
 			//Test if GetArgs removes whitespace properly
 			if (new IfStatementMacro().GetArgs("%IF    A   ==   B%").Length != 3)
 			{
-				throw new Exception();
+				throw new Exception("Test failed!");
 			}
 		}
 
@@ -147,6 +151,33 @@ MOVE.L	#42,D2";
 			_ = ifm_m.Compile("%IFMODE SIGNED%");
 			Console.WriteLine("Should be in signed mode:");
 			Console.WriteLine(IfStatementMacro.SignedMode);
+		}
+
+		[TestMethod]
+		public void ImageValidatorTest()
+		{
+			//Check if image validator works
+			Bitmap b = new Bitmap(1, 1);
+			if (Utils.ValidateImage(b))
+			{
+				throw new Exception("Failed!");
+			}
+		}
+
+		[TestMethod]
+		public void ImageConvertTest()
+		{
+			const string path = @"C:\tmp\convtest.png";
+			//File.WriteAllBytes(path, Convert.FromBase64String(Resources.CONV_TEST));
+			Bitmap b = new Bitmap(path);
+			var spSD = ImageToGenesisConverter.CompileImage(b, false);
+			var bgSD = ImageToGenesisConverter.CompileImage(b, true);
+			Console.WriteLine($"SP Data: ");
+			Console.WriteLine(spSD.Item1);
+			Console.WriteLine($"BG Data: ");
+			Console.WriteLine(bgSD.Item1);
+			Console.WriteLine($"BG Layout: ");
+			Console.WriteLine(bgSD.Item2);
 		}
 	}
 }

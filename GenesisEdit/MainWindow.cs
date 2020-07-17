@@ -11,7 +11,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -28,11 +27,11 @@ namespace GenesisEdit
 		private static readonly DialogResult[] VALID_DIALOG_RESULTS = new DialogResult[] { DialogResult.OK, DialogResult.Cancel };
 		private static readonly Dictionary<Regex, Color> SYNTAX_COLORS = new Dictionary<Regex, Color>()
 		{
-			{ new Regex("[0-9]+"), Color.FromArgb(184, 215, 163) },
-			{ new Regex("[A-Z_]{1}[A-Z0-9_]*", RegexOptions.IgnoreCase), Color.FromArgb(78, 201, 176) },
+			{ new Regex("[#$]{0,2}[0-9]+"), Color.FromArgb(184, 215, 163) },
+			{ new Regex("[A-Z_]{1}[A-Z0-9_]*:?", RegexOptions.IgnoreCase), Color.FromArgb(78, 201, 176) },
 			{ new Regex("[A-Z]{2,4}(\\.[lwb])?\\s+", RegexOptions.IgnoreCase), Color.FromArgb(75, 156, 206) },
 			{ new Regex("[AD][0-9]", RegexOptions.IgnoreCase), Color.FromArgb(241, 120, 0) },
-			{ new Regex(";.+\r?\n", RegexOptions.IgnoreCase), Color.FromArgb(87, 166, 74)}
+			{ new Regex("(;.+\r?\n)|(%[^\r\n%]*%)", RegexOptions.IgnoreCase), Color.FromArgb(87, 166, 74) },
 		};
 		private static Dictionary<byte, Color> THEME = new Dictionary<byte, Color>()
 		{
@@ -49,15 +48,14 @@ namespace GenesisEdit
 		//Genesis data
 		private List<GenesisEvent> Events => EventsList.Controls.OfType<EventControl>().Select(e => e.Event).ToList();
 		private List<Variable> Variables => varEditor.GetVariables().ToList();
-		private Color[,] Palettes => palEditor.Palettes;
 		private ROMInfo rom = new ROMInfo();
 		private List<Sprite> Sprites => spriteEditor.Sprites;
-
+		private Bitmap BG1 => backgroundEditor.BG1;
+		private Bitmap BG2 => backgroundEditor.BG2;
 
 		//GUIS
 		private readonly SettingsWindow settings = new SettingsWindow();
 		private readonly VarEditor varEditor = new VarEditor();
-		private readonly PalEditor palEditor = new PalEditor();
 		private readonly HelpWindow helpWindow = new HelpWindow();
 		private readonly SpriteEditor spriteEditor = new SpriteEditor();
 		private readonly BackgroundEditor backgroundEditor = new BackgroundEditor();
@@ -146,15 +144,13 @@ namespace GenesisEdit
 					File.Delete(saveDialog.FileName);
 				}
 				file = File.Open(saveDialog.FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-				FileHandler.SaveFile(file, rom, Variables, Events, Palettes);
+				FileHandler.SaveFile(file, rom, Variables, Events);
 			}
 		}
 
 		private void RunButton_Click(object sender, EventArgs e) => Compile();
 
 		private void VariablesButton_Click(object sender, EventArgs e) => varEditor.ShowDialog();
-
-		private void PalettesButton_Click(object sender, EventArgs e) => palEditor.ShowDialog();
 
 		private void SettingsButton_Click(object sender, EventArgs e)
 		{
@@ -211,7 +207,29 @@ namespace GenesisEdit
 			}
 		}
 
-		private void Compile() => Compiler.Compiler.Compile(Events, Variables);
+		private void Compile()
+		{
+			try
+			{
+				Task t = new Task(() =>
+				{
+					Compiler.Compiler.Compile(Events, Variables, Sprites, rom, BG1, BG2);
+				});
+				t.Start();
+				while (!t.IsCompleted)
+				{
+					Application.DoEvents();
+				}
+			}
+			catch (ArgumentNullException e)
+			{
+				_ = MessageBox.Show($"A sprite or background might be missing a texure!\nError while compiling:\n{e.GetType()} - {e.Message}\n{e.StackTrace}");
+			}
+			catch (Exception e)
+			{
+				_ = MessageBox.Show($"Error while compiling:\n{e.GetType()} - {e.Message}\n{e.StackTrace}");
+			}
+		}
 
 		private void CodeBox_TextChanged(object sender, EventArgs e)
 		{
@@ -223,14 +241,18 @@ namespace GenesisEdit
 			{
 				RunSyntaxHighlighter();
 			}
-			Events.Find(ge =>
+			((Events ?? new List<GenesisEvent>()).Find(ge =>
 			{
 				if (ge == null)
 				{
 					return false;
 				}
+				if (EventSel.SelectedItem == null)
+				{
+					return false;
+				}
 				return ge.Name.Equals(EventSel.SelectedItem ?? INVALID_NAME);
-			}).Code = CodeBox.Text;
+			}) ?? new GenesisEvent(EventType.ON_TICK, string.Empty)).Code = CodeBox.Text;
 		}
 
 		private void RunSyntaxHighlighter() => syntaxHighlightTask = Task.Run(delegate
@@ -238,18 +260,18 @@ namespace GenesisEdit
 			Invoke(new Action(delegate
 			{
 				int loc = CodeBox.SelectionStart;
+				int len = CodeBox.SelectionLength;
 				foreach (KeyValuePair<Regex, Color> kv in SYNTAX_COLORS)
 				{
 					MatchCollection mc = kv.Key.Matches(CodeBox.Text);
 					foreach (Match m in mc)
 					{
-						CodeBox.SelectionStart = m.Index;
-						CodeBox.SelectionLength = m.Length;
+						CodeBox.Select(m.Index, m.Length);
 						CodeBox.SelectionColor = kv.Value;
 					}
 				}
 				CodeBox.DeselectAll();
-				CodeBox.SelectionStart = loc;
+				CodeBox.Select(loc, len);
 				CodeBox.SelectionColor = defaultFG;
 			}));
 		});

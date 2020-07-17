@@ -2,15 +2,15 @@
 {
 	partial class EventControl
 	{
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
+		///<summary> 
+		///Required designer variable.
+		///</summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		///<summary> 
+		///Clean up any resources being used.
+		///</summary>
+		///<param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && (components != null))
@@ -22,10 +22,10 @@
 
 		#region Component Designer generated code
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
-		/// the contents of this method with the code editor.
-		/// </summary>
+		///<summary> 
+		///Required method for Designer support - do not modify 
+		///the contents of this method with the code editor.
+		///</summary>
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
@@ -35,9 +35,9 @@
 			this.ButtonSel = new System.Windows.Forms.ComboBox();
 			this.Resizer = new System.Windows.Forms.Timer(this.components);
 			this.SuspendLayout();
-			// 
-			// DeleteButton
-			// 
+			//
+			//DeleteButton
+			//
 			this.DeleteButton.Dock = System.Windows.Forms.DockStyle.Right;
 			this.DeleteButton.Location = new System.Drawing.Point(245, 0);
 			this.DeleteButton.Name = "DeleteButton";
@@ -46,17 +46,17 @@
 			this.DeleteButton.Text = "X";
 			this.DeleteButton.UseVisualStyleBackColor = true;
 			this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
-			// 
-			// NameBox
-			// 
+			//
+			//NameBox
+			//
 			this.NameBox.Location = new System.Drawing.Point(4, 9);
 			this.NameBox.Name = "NameBox";
 			this.NameBox.Size = new System.Drawing.Size(91, 20);
 			this.NameBox.TabIndex = 1;
 			this.NameBox.TextChanged += new System.EventHandler(this.NameBox_TextChanged);
-			// 
-			// TypeSel
-			// 
+			//
+			//TypeSel
+			//
 			this.TypeSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.TypeSel.FormattingEnabled = true;
 			this.TypeSel.Location = new System.Drawing.Point(101, 9);
@@ -66,9 +66,9 @@
 			this.TypeSel.Size = new System.Drawing.Size(76, 21);
 			this.TypeSel.TabIndex = 2;
 			this.TypeSel.SelectedIndexChanged += new System.EventHandler(this.TypeSel_SelectedIndexChanged);
-			// 
-			// ButtonSel
-			// 
+			//
+			//ButtonSel
+			//
 			this.ButtonSel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.ButtonSel.FormattingEnabled = true;
 			this.ButtonSel.Location = new System.Drawing.Point(183, 9);
@@ -78,14 +78,14 @@
 			this.ButtonSel.Size = new System.Drawing.Size(56, 21);
 			this.ButtonSel.TabIndex = 3;
 			this.ButtonSel.SelectedIndexChanged += new System.EventHandler(this.ButtonSel_SelectedIndexChanged);
-			// 
-			// Resizer
-			// 
+			//
+			//Resizer
+			//
 			this.Resizer.Enabled = true;
 			this.Resizer.Tick += new System.EventHandler(this.Resizer_Tick);
-			// 
-			// EventControl
-			// 
+			//
+			//EventControl
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.ButtonSel);

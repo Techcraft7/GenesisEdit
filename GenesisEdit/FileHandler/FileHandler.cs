@@ -14,7 +14,7 @@ namespace GenesisEdit.FIleHandler
 	{
 		public static readonly Regex sectionRegex = new Regex("\\[[A-Z_]{1}([A-Z0-9_])*\\](\\r?\\n)(((([^\\r\\n= ]+=[^\\r\\n]+)|(\\s*;[^\\r\\n]*))(\\r?\\n)?))*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
-		public static void SaveFile(FileStream fs, ROMInfo info, List<Variable> vars, List<GenesisEvent> events, Color[,] palettes)
+		public static void SaveFile(FileStream fs, ROMInfo info, List<Variable> vars, List<GenesisEvent> events)
 		{
 			INIFile file = new INIFile();
 			//Write ROM Info
@@ -26,16 +26,6 @@ namespace GenesisEdit.FIleHandler
 				{  "Subtitle2", info.Subtitle2 },
 				{  "ProductNo", info.ProductNo }
 			}));
-			//Write Palettes
-			Dictionary<string, string> iniPals = new Dictionary<string, string>();
-			for (int p = 0; p < palettes.GetLength(0); p++)
-			{
-				for (int c = 0; c < palettes.GetLength(1); c++)
-				{
-					iniPals.Add($"P{p}C{c}", Utils.FromColor(palettes[p, c]).ToString());
-				}
-			}
-			file.AddSection(new INISection("Palettes", iniPals));
 			//Write Variables
 			Dictionary<string, string> iniVars = new Dictionary<string, string>();
 			foreach (Variable v in vars)

@@ -18,10 +18,12 @@ namespace GenesisEdit.Compiler.Macros
 				{
 					if (line.Substring(1).ToUpper().StartsWith(GetPrefix().ToUpper()))
 					{
+						CompilerException.CURRENT_LINE = i;
 						lines[i] = CompileMacro(line);
 					}
 				}
 			}
+			CompilerException.CURRENT_LINE = -1;
 			return string.Join("\n", lines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray());
 		}
 

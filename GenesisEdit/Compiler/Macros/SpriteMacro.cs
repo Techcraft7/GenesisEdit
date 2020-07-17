@@ -9,7 +9,7 @@ namespace GenesisEdit.Compiler.Macros
 {
 	internal class SpriteMacro : Macro
 	{
-		// Dictionary for Operator -> Instruction mappings
+		//Dictionary for Operator -> Instruction mappings
 		private static readonly Dictionary<string, string> OPERATORS = new Dictionary<string, string>()
 		{
 			{ "=", "MOVE" },
@@ -22,7 +22,7 @@ namespace GenesisEdit.Compiler.Macros
 		public override string CompileMacro(string code)
 		{
 			string[] args = GetArgs(code);
-			// Remove nulls
+			//Remove nulls
 			for (int i = 0; i < args.Length; i++)
 			{
 				args[i] = args[i] ?? string.Empty;
@@ -30,13 +30,14 @@ namespace GenesisEdit.Compiler.Macros
 			string name = args[0];
 			switch (args.Length)
 			{
+				case 4:
 				case 5:
-					// Syntax: %SPRITE <NAME> [XY] (=|+=|-=|*=|/=) <VALUE> [BWL][SU]%
+					//Syntax: %SPRITE <NAME> (X|Y) (=|+=|-=|*=|/=) <VALUE> [(B|W|L)(S|U)]%
 					Utils.Log("Using XY manipulation submacro");
 					string xy_coord = args[1].ToUpper();
 					string xy_operation = args[2];
 					string xy_value = args[3];
-					string xy_mode = args[4]; //(B, W, or L) + (S or U)
+					string xy_mode = args.Length == 5 ? args[4] : "LS"; //(B, W, or L) + (S or U)
 					List<Func<bool>> xy_validators = new List<Func<bool>>()
 					{
 						() => new string[] { "X", "Y" }.Contains(xy_coord),
@@ -53,18 +54,22 @@ namespace GenesisEdit.Compiler.Macros
 					string dst = $"GE_SPRITE_{name}_{xy_coord}";
 					return $"{opCode}{("*=/=".Contains(xy_operation) ? xy_mode[1].ToString() : string.Empty)}.{xy_mode[0]} {src},{dst}";
 				case 3:
-					// Syntax: %SPRITE <NAME> DIR <VALUE>%
-					Utils.Log("Using DIR manipulation submacro");
-					List<Func<bool>> validators = new List<Func<bool>>()
+					switch (args[1].ToUpper())
 					{
-						() => args[1].ToUpper().Equals("DIR"),
-						() => new string[] { "LEFT", "RIGHT" }.Contains(args[2].ToUpper())
-					};
-					if (!Utils.Validate(validators))
-					{
-						ThrowBecauseOfInvalidMacro();
+						case "DIR":
+							//Syntax: %SPRITE <NAME> DIR <VALUE>%
+							Utils.Log("Using DIR manipulation submacro");
+							List<Func<bool>> validators = new List<Func<bool>>()
+							{
+								() => new string[] { "LEFT", "RIGHT" }.Contains(args[2].ToUpper())
+							};
+							if (!Utils.Validate(validators))
+							{
+								ThrowBecauseOfInvalidMacro();
+							}
+							return $"MOVE.W #{(args[2].StartsWith("L") ? 1 : 0)},GE_SPRITE_{args[0]}_DIR";
 					}
-					return "MOVE.";
+					throw new CompilerException("SPRITE Macro had invalid arguments. Check the syntax in the help menu");
 			}
 			throw new CompilerException($"SPRITE Macro had the wrong number of arguments");
 		}

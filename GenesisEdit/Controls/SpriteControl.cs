@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GenesisEdit.Compiler;
+using GenesisEdit.Forms;
 
 namespace GenesisEdit.Controls
 {
@@ -24,6 +25,7 @@ namespace GenesisEdit.Controls
 		public SpriteControl()
 		{
 			InitializeComponent();
+			Sprite = new Sprite(null);
 		}
 
 		private void DeleteButton_Click(object sender, EventArgs e)
@@ -44,9 +46,8 @@ namespace GenesisEdit.Controls
 			Sprite.Name = NameBox.Text;
 		}
 
-		private void PreviewBox_Click(object sender, EventArgs e)
-		{
+		private void PreviewBox_Click(object sender, EventArgs e) => BackgroundEditor.SetImage(ref PreviewBox);
 
-		}
+		private void Resizer_Tick(object sender, EventArgs e) => Width = Parent.Width;
 	}
 }

@@ -12,7 +12,10 @@ namespace GenesisEdit.Forms
 {
 	public partial class BackgroundEditor : Form
 	{
-		private OpenFileDialog openDialog = new OpenFileDialog()
+		public Bitmap BG1 => (Bitmap)BG1Box.Image;
+		public Bitmap BG2 => (Bitmap)BG1Box.Image;
+
+		private static readonly OpenFileDialog openDialog = new OpenFileDialog()
 		{
 			Filter = Utils.AutoFilter("png", "jpg", "bmp"),
 			Title = "Open Image"
@@ -24,7 +27,7 @@ namespace GenesisEdit.Forms
 		private void BG1Box_Click(object sender, EventArgs e) => SetImage(ref BG1Box);
 		private void BG2Box_Click(object sender, EventArgs e) => SetImage(ref BG2Box);
 
-		private void SetImage(ref PictureBox pb)
+		internal static void SetImage(ref PictureBox pb)
 		{
 			bool retry = false;
 			do
@@ -44,15 +47,9 @@ namespace GenesisEdit.Forms
 			try
 			{
 				Bitmap b = new Bitmap(openDialog.FileName);
-				List<Func<bool>> funcs = new List<Func<bool>>()
+				if (!Utils.ValidateImage(b))
 				{
-					() => b.Width % 8 == 0,
-					() => b.Height % 8 == 0,
-					() => Utils.ValidateColors(b)
-				};
-				if (!Utils.Validate(funcs))
-				{
-					throw new InvalidOperationException("Invalid image! Must only use 15 colors + transparency and also width and height must be divisible by 8!");
+					throw new InvalidOperationException("Invalid image! Must only use 16 colors (includes transparency) and width and height must be divisible by 8!");
 				}
 				pb.Image = b;
 			}

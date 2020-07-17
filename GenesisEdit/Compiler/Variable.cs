@@ -12,13 +12,13 @@ namespace GenesisEdit.Compiler
 		WORD,
 		LONG,
 	}
-	internal abstract class Variable : ICompileable<object>
+	internal abstract class Variable : ICompileable<object>, INameable
 	{
 		public int Length { get; private set; }
 		public string Name
 		{
 			get => name;
-			set => name = value ?? throw new ArgumentNullException();
+			set => name = value ?? $"Var_{new Random().Next():X}";
 		}
 		private string name;
 
@@ -34,6 +34,8 @@ namespace GenesisEdit.Compiler
 		public abstract char GetVariableTypeChar();
 
 		public string Compile(object _) => $"USER_{Name}:\t\tRC.{GetVariableTypeChar()}\t{Length}";
+
+		public bool Validate() => Utils.IsValidIdentifier(Name);
 	}
 
 	internal class VarLong : Variable

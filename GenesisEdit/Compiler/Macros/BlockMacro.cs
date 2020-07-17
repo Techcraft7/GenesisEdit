@@ -23,7 +23,7 @@ namespace GenesisEdit.Compiler.Macros
 				string line = Utils.RemovePadding(lines[i]);
 				if (line.StartsWith("%") && line.EndsWith("%") && line.Length > 1)
 				{
-					// If the part after the % starts with the prefix
+					//If the part after the % starts with the prefix
 					if (line.Substring(1).ToUpper().StartsWith(GetPrefix().ToUpper()))
 					{
 						blocks.Push(new Tuple<int, int>(i, -1));
@@ -49,12 +49,13 @@ namespace GenesisEdit.Compiler.Macros
 				Utils.Log($"Done compiling block macro \"{GetPrefix()}\"");
 				return code;
 			}
-			// Convert to text
-			// Sort by number of blocks inside, the inner most blocks should be first
+			//Convert to text
+			//Sort by number of blocks inside, the inner most blocks should be first
 			Block first = closed.OrderBy(b => Compiler.CountBlocks(string.Join("\n", lines.Skip(b.Item1).Take(b.Item2 - b.Item1 + 1)), false)).ToDictionary(t => t, t => string.Join("\n", lines.Skip(t.Item1).Take(t.Item2 - t.Item1 + 1))).First();
-			// replace blocks
-			string comp = CompileMacro(first.Value);
+			//replace blocks
+			CompilerException.CURRENT_LINE = first.Key.Item1;
 			string compiled = CompileMacro(first.Value);
+			CompilerException.CURRENT_LINE = -1;
 			lines[first.Key.Item1] = compiled;
 			for (int i = first.Key.Item1 + 1; i <= first.Key.Item2; i++)
 			{

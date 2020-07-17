@@ -19,7 +19,7 @@ namespace GenesisEdit {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,7 +61,7 @@ namespace GenesisEdit {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to SU5DTFVERQlTWVNURU0uUw0KUlNTRVQJVVNFUlJBTQ0KUExBWVg6CQlSUy5MCTANClBMQVkxWDoJCVJTLlcJMQ0KUExBWTJYOgkJUlMuVwkxDQpQTEFZWToJCVJTLkwJMA0KUExBWTFZOgkJUlMuVwkxDQpQTEFZMlk6CQlSUy5XCTENClRFTVBTQ1JFRU46CVJTLkIJNDA5Ng0KVEVNUFNDUkVFTjI6CVJTLkIJNDA5Ng0KDQolR0VfVVNFUlZBUiUNCg0KRU5EVkFSUzoJUlMuQgkwDQoNClVTRVJJTklUOglNT1ZFLlcJIzAsUExBWTFYDQoJCU1PVkUuVwkjMCxQTEFZMVkNCgkJTU9WRS5XCSMwLFBMQVkyWA0KCQlNT1ZFLlcJIzAsUExBWTJZDQoNCgkJRE1BRFVNUAlNQVBHRlgsJUdFX05VTV9CR19DSEFSUyUqMzIsJDIwDQoJCURNQURVTVAJU1BSSVRFR0ZYLCVHRV9OVU1fU1BSSVRF [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string CODE_TEMPLATE {
             get {
@@ -70,7 +70,16 @@ namespace GenesisEdit {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to WjgwUkVROgkJRVFVCSRBMTExMDAKWjgwUkVTOgkJRVFVCSRBMTEyMDAKWjgwUkFNOgkJRVFVCSRBMDAwMDAKCkI0OgkJRVFVCTE8PDQKQjMwOgkJRVFVCTE8PDMwCgpWRFBfREFUQToJRVFVCSRGRkMwMDAwMApWRFBfU1RBVFVTOglFUVUJJEZGQzAwMDA0ClZEUF9DT05UUk9MOglFUVUJJEZGQzAwMDA0CgpWUkFNVzoJCUVRVQklMDEqQjMwKyUwMDAwKkI0CkNSQU1XOgkJRVFVCSUxMSpCMzArJTAwMDAqQjQKVlNSQU1XOgkJRVFVCSUwMSpCMzArJTAwMDEqQjQKVlJBTVI6CQlFUVUJJTAwKkIzMCslMDAwMCpCNApDUkFNUjoJCUVRVQklMDAqQjMwKyUwMDEwKkI0ClZTUkFNUjoJCUVRVQklMDAqQjMwKyUwMDAxKkI0RE1BVlJBTToJRVFVCSUwMSpCMzArJTEwMDAqQjQKRE1BQ1JB [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAACbSURBVDhPpZNdDYAwDAY3JOAAEmTgAA/IQAMykICGyeABB1gY+RpKxtYyFi5Z+nQX2I9t18EbhaWeaI7HTFOiumYC5H7vaHFIQgywzLxFkkAsM1rkEdBkRorcgZzMxBEKfJWZMGKdc75EDnHNJp9CCRUuCUqlwIFLX1AaYRncv/A1EsrgsQe5SCyDZBO1iCQD8RTiiCaDn8/ZmBOW91iiXP2MvQAAAABJRU5ErkJggg==.
+        /// </summary>
+        internal static string CONV_TEST {
+            get {
+                return ResourceManager.GetString("CONV_TEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Oy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KOwkJUkVHSVNURVIgRVFVQVRFUwo7LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpaODBSRVE6CQlFUVUJJEExMTEwMApaODBSRVM6CQlFUVUJJEExMTIwMApaODBSQU06CQlFUVUJJEEwMDAwMAoKQjQ6CQlFUVUJMTw8NApCMzA6CQlFUVUJMTw8MzAKClZEUF9EQVRBOglFUVUJJEZGQzAwMDAwClZEUF9TVEFUVVM6CUVRVQkkRkZDMDAwMDQKVkRQX0NPTlRST0w6CUVRVQkkRkZDMDAwMDQKClZSQU1XOgkJRVFVCSUwMSpCMzArJTAwMDAqQjQKQ1JBTVc6CQlFUVUJJTExKkIzMCslMDAwMCpCNApWU1JBTVc6CQlFUVUJ [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string SYSTEM_CODE {
             get {
