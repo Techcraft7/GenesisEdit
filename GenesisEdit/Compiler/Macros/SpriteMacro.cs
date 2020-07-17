@@ -64,7 +64,7 @@ namespace GenesisEdit.Compiler.Macros
 					{
 						ThrowBecauseOfInvalidMacro();
 					}
-					return "MOVE.";
+					return $"MOVE.W {args[2]}";
 			}
 			throw new CompilerException($"SPRITE Macro had the wrong number of arguments");
 		}
