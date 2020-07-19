@@ -213,17 +213,24 @@ namespace GenesisEdit
 			{
 				Task t = new Task(() =>
 				{
-					Compiler.Compiler.Compile(Events, Variables, Sprites, rom, BG1, BG2);
+					try
+					{
+						Compiler.Compiler.Compile(Events, Variables, Sprites, rom, BG1, BG2);
+					}
+					catch (ArgumentNullException e)
+					{
+						_ = MessageBox.Show($"A sprite or background might be missing a texure!\nError while compiling:\n{e.GetType()} - {e.Message}\n{e.StackTrace}");
+					}
+					catch (Exception e)
+					{
+						_ = MessageBox.Show($"Error while compiling:\n{e.GetType()} - {e.Message}\n{e.StackTrace}");
+					}
 				});
 				t.Start();
 				while (!t.IsCompleted)
 				{
 					Application.DoEvents();
 				}
-			}
-			catch (ArgumentNullException e)
-			{
-				_ = MessageBox.Show($"A sprite or background might be missing a texure!\nError while compiling:\n{e.GetType()} - {e.Message}\n{e.StackTrace}");
 			}
 			catch (Exception e)
 			{

@@ -198,6 +198,13 @@ namespace GenesisEdit
 		public static IEnumerable<T> SkipFirstAndLast<T>(IEnumerable<T> list, int num) => SkipLast(list.Skip(num), num);
 		public static IEnumerable<T> TakeFirstAndLast<T>(IEnumerable<T> list, int num) => TakeLast(list.Take(num), num);
 
+		public static ushort[] GetColors(Bitmap b)
+		{
+			ThrowIfAnyNull(b);
+			_ = ValidateImage(b, out Color[] pal);
+			return pal.Select(c => FromColor(c)).ToArray();
+		}
+
 		public static void ForeachPixel(Bitmap b, Action<int, int> func)
 		{
 			b = b ?? throw new ArgumentNullException(nameof(b));
@@ -210,12 +217,41 @@ namespace GenesisEdit
 			}
 		}
 
+		public static string FormatPalettes(ushort[,] palettes)
+		{
+			ThrowIfAnyNull(palettes);
+			string buf = string.Empty;
+			for (int p = 0; p < palettes.GetLength(0); p++)
+			{
+				buf += $"PALETTE{p + 1}:\tDC.W\t";
+				for (int c = 0; c < palettes.GetLength(1); c++)
+				{
+					buf += $"{palettes[p, c]:X4}";
+					if (c != palettes.GetLength(1) - 1)
+					{
+						buf += ", ";
+					}
+				}
+				buf += Environment.NewLine;
+			}
+			return buf;
+		}
+
 		public static string[] GetLines(string s) => s.Replace("\r", string.Empty).Split('\n');
 
 		public static string FirstLine(string s)
 		{
 			string[] lines = GetLines(s);
 			return lines.Count() > 0 ? lines.First() : null;
+		}
+
+		public static string InitSpriteVars(string code, List<Sprite> sprites)
+		{
+			foreach (Sprite sp in sprites)
+			{
+				code += sp.InitVars();
+			}
+			return code;
 		}
 
 		public static bool Validate(List<Func<bool>> funcs) => funcs.All(f => f.Invoke());

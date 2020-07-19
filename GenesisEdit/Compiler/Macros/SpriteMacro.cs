@@ -38,6 +38,7 @@ namespace GenesisEdit.Compiler.Macros
 					string xy_operation = args[2];
 					string xy_value = args[3];
 					string xy_mode = args.Length == 5 ? args[4] : "LS"; //(B, W, or L) + (S or U)
+					xy_mode = xy_mode.ToUpper();
 					List<Func<bool>> xy_validators = new List<Func<bool>>()
 					{
 						() => new string[] { "X", "Y" }.Contains(xy_coord),
@@ -49,21 +50,26 @@ namespace GenesisEdit.Compiler.Macros
 					{
 						ThrowBecauseOfInvalidMacro();
 					}
-					string opCode = OPERATORS[xy_operation];
-					string src = Compiler.GetRealVariableName(xy_value);
-					string dst = $"GE_SPRITE_{name}_{xy_coord}";
-					return $"{opCode}{("*=/=".Contains(xy_operation) ? xy_mode[1].ToString() : string.Empty)}.{xy_mode[0]} {src},{dst}";
+					string xy_opCode = OPERATORS[xy_operation];
+					string xy_src = Compiler.GetRealVariableName(xy_value);
+					string xy_dst = $"GE_SPRITE_{name}_{xy_coord}";
+					bool xy_isMulOrDiv = "*=/=".Contains(xy_operation);
+					if (xy_isMulOrDiv && xy_mode[0] == 'B')
+					{
+						throw new CompilerException("Multiplication and Division do not support using the BYTE size!");
+					}
+					return $"{xy_opCode}{(xy_isMulOrDiv ? xy_mode[1].ToString() : string.Empty)}.{xy_mode[0]} {xy_src},{xy_dst}";
 				case 3:
 					switch (args[1].ToUpper())
 					{
 						case "DIR":
 							//Syntax: %SPRITE <NAME> DIR <VALUE>%
 							Utils.Log("Using DIR manipulation submacro");
-							List<Func<bool>> validators = new List<Func<bool>>()
+							List<Func<bool>> dir_validators = new List<Func<bool>>()
 							{
 								() => new string[] { "LEFT", "RIGHT" }.Contains(args[2].ToUpper())
 							};
-							if (!Utils.Validate(validators))
+							if (!Utils.Validate(dir_validators))
 							{
 								ThrowBecauseOfInvalidMacro();
 							}

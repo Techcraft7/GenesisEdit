@@ -13,6 +13,8 @@ namespace GenesisEdit.Compiler
 {
 	internal static class ImageToGenesisConverter
 	{
+		public static ushort[] PAL_BG1 { get; private set; }
+		public static ushort[] PAL_BG2 { get; private set; }
 		public static List<ushort[,]> ALL_CHARS = new List<ushort[,]>();
 		public static int TOTAL_BG_CHARS { get; private set; }  = 0;
 		public static int TOTAL_SP_CHARS { get; private set; }  = 0;
@@ -23,6 +25,8 @@ namespace GenesisEdit.Compiler
 			ALL_CHARS.Clear();
 			TOTAL_BG_CHARS = 0;
 			TOTAL_SP_CHARS = 0;
+			PAL_BG1 = null;
+			PAL_BG2 = null;
 		}
 
 		//Takes in a bitmap and returns the assembly version of it
@@ -35,8 +39,8 @@ namespace GenesisEdit.Compiler
 		{
 			b = b ?? throw new ArgumentNullException(nameof(b));
 
-			bool isValidates = Utils.ValidateImage(b, out Color[] pallete);
-			if (!isValidates)
+			bool valid = Utils.ValidateImage(b, out Color[] pallete);
+			if (!valid)
 			{
 				throw new ArgumentException("Inavlid image");
 			}
@@ -45,6 +49,28 @@ namespace GenesisEdit.Compiler
 
 			if (bgMode)
 			{
+				if (TOTAL_BG_CHARS == 0)
+				{
+					if (PAL_BG1 == null)
+					{
+						PAL_BG1 = pallete.Select(c => Utils.FromColor(c)).ToArray();
+					}
+					else
+					{
+						throw new Exception("Failed to compile bg pallete 1! This should NOT happen!");
+					}
+				}
+				else
+				{
+					if (PAL_BG2 == null)
+					{
+						PAL_BG2 = pallete.Select(c => Utils.FromColor(c)).ToArray();
+					}
+					else
+					{
+						throw new Exception("You can only compile 2 BG's!");
+					}
+				}
 				TOTAL_BG_CHARS += chars.Count;
 			}
 			else
@@ -64,11 +90,15 @@ namespace GenesisEdit.Compiler
 			{
 				for (int y = 0; y < 8; y++)
 				{
-					data += "DC.B ";
+					data += "\t\tDC.B\t";
 					//2 pixels/byte
 					for (int x = 0; x < 8; x += 2)
 					{
 						data += $"${chars[i][x, y]:X2}";
+						if (x != 6)
+						{
+							data += ", ";
+						}
 					}
 					data += Environment.NewLine;
 				}
@@ -224,7 +254,7 @@ namespace GenesisEdit.Compiler
 
 			for (int y = 0; y < h; y++)
 			{
-				layout += "DC.W ";
+				layout += "\t\tDC.W\t";
 				for (int x = 0; x < w; x++)
 				{
 					int i = (x % w) + (y * w);
@@ -239,6 +269,21 @@ namespace GenesisEdit.Compiler
 			}
 
 			return chars;
+		}
+
+		//Expand a bitmap to 40x28 mode
+		public static Bitmap Expand(Bitmap b)
+		{
+			b = b ?? throw new ArgumentNullException(nameof(b));
+			Bitmap temp = new Bitmap(40 * 8, 28 * 8);
+			for (int y = 0; y < temp.Height; y++)
+			{
+				for (int x = 0; x < temp.Width; x++)
+				{
+					temp.SetPixel(x, y, b.GetPixel(x % b.Width, y % b.Height));
+				}
+			}
+			return temp;
 		}
 
 		//0 = no match

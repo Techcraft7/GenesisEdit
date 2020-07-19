@@ -26,6 +26,7 @@ namespace GenesisEdit.Controls
 		{
 			InitializeComponent();
 			Sprite = new Sprite(null);
+			NameBox.Text = Sprite.Name;
 		}
 
 		private void DeleteButton_Click(object sender, EventArgs e)
@@ -46,7 +47,11 @@ namespace GenesisEdit.Controls
 			Sprite.Name = NameBox.Text;
 		}
 
-		private void PreviewBox_Click(object sender, EventArgs e) => BackgroundEditor.SetImage(ref PreviewBox);
+		private void PreviewBox_Click(object sender, EventArgs e)
+		{
+			BackgroundEditor.SetImage(ref PreviewBox);
+			Sprite.Texture = (Bitmap)PreviewBox.Image;
+		}
 
 		private void Resizer_Tick(object sender, EventArgs e) => Width = Parent.Width;
 	}

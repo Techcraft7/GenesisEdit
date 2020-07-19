@@ -33,7 +33,7 @@ namespace GenesisEdit.Compiler
 		public abstract VariableType GetVariableType();
 		public abstract char GetVariableTypeChar();
 
-		public string Compile(object _) => $"USER_{Name}:\t\tRC.{GetVariableTypeChar()}\t{Length}";
+		public string Compile(object _) => $"USER_{Name}:\tRC.{GetVariableTypeChar()}\t{Length}";
 
 		public bool Validate() => Utils.IsValidIdentifier(Name);
 	}

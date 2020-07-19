@@ -171,11 +171,11 @@ SYSTEMEND:	RS.B	0
 		DC.L	ERROR
 		ENDR
 
-CARTRIDGEDATA:	DC.B	"%GE_ROM_TITLE__%"
-		DC.B	"%GE_ROM_DATE___%"
-TITLE:		DC.B	"%GE_ROM_SUBTITLE_1_____________________________%"
-		DC.B	"%GE_ROM_SUBTITLE_2_____________________________%"
-		DC.B	"%GE_ROM_PROD#%"	;PRODUCT NO;VERSION
+CARTRIDGEDATA:	DC.B	""
+		DC.B	""
+TITLE:		DC.B	""
+		DC.B	""
+		DC.B	""	;PRODUCT NO;VERSION
 		DC.W	0			;CHECKSUM
 		DC.B	"J               "	;CONTROL DATA
 		DC.L	$000000,$3FFFFF 	;ROM ADDRESS

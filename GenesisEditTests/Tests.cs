@@ -141,16 +141,16 @@ MOVE.L	#42,D2";
 			Console.WriteLine($"\nOUTPUT: {{\n{if_m.Compile(if_m_code)}\n}}\n");
 			SpriteMacro s_m = new SpriteMacro();
 			Console.WriteLine("\nSPRITE MACRO:");
-			Console.WriteLine(s_m.Compile("%SPRITE PLAYER X *= *A0 WS%"));
+			Console.WriteLine(s_m.Compile("%SPRITE Player X *= *A0 WS%"));
 
 			IfModeMacro ifm_m = new IfModeMacro();
 			Console.WriteLine("\nIF MODE MACRO:");
 			_ = ifm_m.Compile("%IFMODE UNSIGNED%");
 			Console.WriteLine("Should be in unsigned mode:");
-			Console.WriteLine(IfStatementMacro.SignedMode);
+			Console.WriteLine(IfStatementMacro.SignedMode ? "Nope" : "YAY!");
 			_ = ifm_m.Compile("%IFMODE SIGNED%");
 			Console.WriteLine("Should be in signed mode:");
-			Console.WriteLine(IfStatementMacro.SignedMode);
+			Console.WriteLine(IfStatementMacro.SignedMode ? "YAY!" : "Nope");
 		}
 
 		[TestMethod]

@@ -85,13 +85,13 @@ namespace GenesisEdit.Controls
 		private void TypeSel_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			MainWindow.EVENT_LIST_STALE = true;
-			Event.Button = (Button)ButtonSel.SelectedIndex;
+			Event.Type = (EventType)TypeSel.SelectedIndex;
 		}
 
 		private void ButtonSel_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			MainWindow.EVENT_LIST_STALE = true;
-			Event.Type = (EventType)TypeSel.SelectedIndex;
+			Event.Button = (Button)ButtonSel.SelectedIndex;
 		}
 
 		private void Resizer_Tick(object sender, EventArgs e) => EventControl_Resize(null, null);

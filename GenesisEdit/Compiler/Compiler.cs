@@ -16,7 +16,7 @@ namespace GenesisEdit.Compiler
 {
 	internal class Compiler
 	{
-		private const string FILE_NAME = "CODE.S";
+		private const string FILE_NAME = "CODE";
 		private const string SYSTEM_NAME = "SYSTEM.S";
 
 		//Regexes
@@ -91,7 +91,21 @@ namespace GenesisEdit.Compiler
 				}
 				var compiledSprites = sprites.Select(s => ImageToGenesisConverter.CompileImage(s.Texture, false)).ToList();
 				Utils.Log($"Compiling BG's");
+				Utils.Log("Expanding BG's");
+				bg1 = ImageToGenesisConverter.Expand(bg1);
+				bg2 = ImageToGenesisConverter.Expand(bg2);
+
 				var compiledBGs = new List<Bitmap>() { bg1, bg2 }.Select(bg => ImageToGenesisConverter.CompileImage(bg, true)).ToList();
+
+				Utils.Log($"Compiling Palettes");
+
+
+				if (Utils.GetColors(bg1).Concat(Utils.GetColors(bg2)).Distinct().Count() > 16)
+				{
+					throw new CompilerException($"Due to limitations, both backgrounds combined can only have 16 colors in total");
+				}
+
+				ushort[,] palettes = new ushort[4, 16];
 
 				Utils.Log($"Filling in templates");
 
@@ -127,7 +141,7 @@ namespace GenesisEdit.Compiler
 							{
 								buf += code + Environment.NewLine;
 							}
-							codeS.Replace(Utils.EVENT_REPLACERS[et].Replace("{0}", et.ToString().ToUpper()), buf);
+							codeS = codeS.Replace(Utils.EVENT_REPLACERS[et].Replace("{0}", kv.Key.ToString().ToUpper()), buf);
 						}
 					}
 					else
@@ -140,21 +154,27 @@ namespace GenesisEdit.Compiler
 								buf += ge.Compile(variables) + Environment.NewLine;
 							}
 						}
-						codeS.Replace(Utils.EVENT_REPLACERS[et], buf);
+						if (et.Equals(EventType.ON_USER_INIT))
+						{
+							codeS += Utils.InitSpriteVars(codeS, sprites);
+						}
+						codeS = codeS.Replace(Utils.EVENT_REPLACERS[et], buf);
 					}
 				}
 				List<string> compiledVars = variables.Select(v => v.Compile(null)).ToList();
 				compiledVars.AddRange(sprites.Select(s => string.Join(Environment.NewLine, s.GetVariables())));
 				Utils.Log("Defining sprite variables");
+				sprites.ForEach(s => compiledVars.AddRange(s.GetVariables()));
 				Utils.Log("Filling in other data");
 				codeS = Utils.ReplaceAll(codeS, new Dictionary<string, string>()
 				{
 					{ "%GE_NUM_BG_CHARS%", ImageToGenesisConverter.TOTAL_BG_CHARS.ToString() },
 					{ "%GE_NUM_SPRITE_CHARS%", ImageToGenesisConverter.TOTAL_SP_CHARS.ToString() },
 					{ "%GE_USERVAR%", string.Join(Environment.NewLine, compiledVars) },
-					{ "%GE_SPRITES%", string.Join(Environment.NewLine, compiledSprites.Select(cs => cs.Item1)) },
-					{ "%GE_BG%", string.Join(Environment.NewLine, compiledBGs.Select(cs => cs.Item1)) },
-					{ "%GE_BG_LAYOUT%", string.Join(Environment.NewLine, compiledBGs.Select(cs => cs.Item2)) }
+					{ "%GE_SPRITES%", "SPRITEGFX:" +  Environment.NewLine + string.Join(Environment.NewLine, compiledSprites.Select(cs => cs.Item1)) },
+					{ "%GE_BG%", "MAPGFX:" +  Environment.NewLine + string.Join(Environment.NewLine, compiledBGs.Select(cs => cs.Item1)) },
+					{ "%GE_BG_LAYOUT%", $"CHARGFX:{Environment.NewLine}{compiledBGs.First().Item2}{Environment.NewLine}CHARGFX2:{Environment.NewLine}{compiledBGs.Last().Item2}" },
+					{ "%GE_PALETTES%", Utils.FormatPalettes(palettes) }
 				});
 
 				Utils.Log($"Filling in System Template");
@@ -179,9 +199,9 @@ namespace GenesisEdit.Compiler
 						codeSLines[i] = string.Empty;
 					}
 				}
-				codeSLines = codeSLines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-				systemSLines = systemSLines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-				File.WriteAllLines(FILE_NAME, codeSLines);
+				//codeSLines = codeSLines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+				//systemSLines = systemSLines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
+				File.WriteAllLines(FILE_NAME + ".S", codeSLines);
 				File.WriteAllLines(SYSTEM_NAME, systemSLines);
 
 				Utils.Log($"Assembling");
