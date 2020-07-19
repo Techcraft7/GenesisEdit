@@ -18,7 +18,7 @@ namespace GenesisEdit.Compiler
 		public static List<ushort[,]> ALL_CHARS = new List<ushort[,]>();
 		public static int TOTAL_BG_CHARS { get; private set; }  = 0;
 		public static int TOTAL_SP_CHARS { get; private set; }  = 0;
-		public static int TOTAL_CHARS { get => TOTAL_BG_CHARS + TOTAL_SP_CHARS; }
+		public static int TOTAL_CHARS { get => TOTAL_BG_CHARS + TOTAL_SP_CHARS + 1; } //include blank char
 
 		public static void Reset()
 		{
@@ -78,7 +78,7 @@ namespace GenesisEdit.Compiler
 				TOTAL_SP_CHARS += chars.Count;
 			}
 
-			//If there are more than 255 characters
+			//If there are more than 255 characters (including blank char)
 			if (TOTAL_CHARS > 0xFF)
 			{
 				throw new InvalidOperationException("Too many characters!");
@@ -258,7 +258,7 @@ namespace GenesisEdit.Compiler
 				for (int x = 0; x < w; x++)
 				{
 					int i = (x % w) + (y * w);
-					layout += $"${(compacted[i].Item2 ? "1" : "0")}{(compacted[i].Item1 ? "8" : "0")}{compacted[i].Item3:X2}";
+					layout += $"${(compacted[i].Item2 ? "1" : "0")}{(compacted[i].Item1 ? "8" : "0")}{(compacted[i].Item3 + 1):X2}";
 					//if not last
 					if (x != w - 1)
 					{
@@ -271,11 +271,11 @@ namespace GenesisEdit.Compiler
 			return chars;
 		}
 
-		//Expand a bitmap to 40x28 mode
+		//Expand a bitmap to fit VDP plane
 		public static Bitmap Expand(Bitmap b)
 		{
 			b = b ?? throw new ArgumentNullException(nameof(b));
-			Bitmap temp = new Bitmap(40 * 8, 28 * 8);
+			Bitmap temp = new Bitmap(64 * 8, 32 * 8);
 			for (int y = 0; y < temp.Height; y++)
 			{
 				for (int x = 0; x < temp.Width; x++)

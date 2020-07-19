@@ -169,15 +169,21 @@ MOVE.L	#42,D2";
 		{
 			const string path = @"C:\tmp\convtest.png";
 			//File.WriteAllBytes(path, Convert.FromBase64String(Resources.CONV_TEST));
-			Bitmap b = new Bitmap(path);
-			var spSD = ImageToGenesisConverter.CompileImage(b, false);
+			Bitmap b = ImageToGenesisConverter.Expand(new Bitmap(path));
+			//var spSD = ImageToGenesisConverter.CompileImage(b, false);
 			var bgSD = ImageToGenesisConverter.CompileImage(b, true);
-			Console.WriteLine($"SP Data: ");
-			Console.WriteLine(spSD.Item1);
+			//Console.WriteLine($"SP Data: ");
+			//Console.WriteLine(spSD.Item1);
 			Console.WriteLine($"BG Data: ");
 			Console.WriteLine(bgSD.Item1);
 			Console.WriteLine($"BG Layout: ");
 			Console.WriteLine(bgSD.Item2);
+		}
+
+		[TestMethod]
+		public void PaletteTests()
+		{
+			Console.WriteLine(Utils.FormatPalettes(new ushort[4, 16]));
 		}
 	}
 }

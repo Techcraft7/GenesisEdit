@@ -42,7 +42,7 @@ namespace GenesisEdit
 		public static bool ValidateColors(ref Bitmap b, out Color[] pallete, bool replaceTransparent = false)
 		{
 			bool ret = true;
-			List<Color> colors = new List<Color>();
+			List<Color> colors = new List<Color>() { Color.FromArgb(0, 0, 0, 0) };
 			b = b ?? throw new ArgumentNullException(nameof(b));
 			for (int x = 0; x < b.Width; x++)
 			{
@@ -135,6 +135,7 @@ namespace GenesisEdit
 		}
 
 		public static void Log(string v) => Console.WriteLine($"[{new StackTrace().GetFrame(1).GetMethod().DeclaringType.Name}] {v}");
+		public static void Log(string v, string p) => Console.WriteLine($"[{p}] {v}");
 
 		public static Color FromUShort(ushort v)
 		{
@@ -226,7 +227,7 @@ namespace GenesisEdit
 				buf += $"PALETTE{p + 1}:\tDC.W\t";
 				for (int c = 0; c < palettes.GetLength(1); c++)
 				{
-					buf += $"{palettes[p, c]:X4}";
+					buf += $"${palettes[p, c]:X4}";
 					if (c != palettes.GetLength(1) - 1)
 					{
 						buf += ", ";
@@ -245,13 +246,14 @@ namespace GenesisEdit
 			return lines.Count() > 0 ? lines.First() : null;
 		}
 
-		public static string InitSpriteVars(string code, List<Sprite> sprites)
+		public static string InitSpriteVars(List<Sprite> sprites)
 		{
+			string buf = string.Empty;
 			foreach (Sprite sp in sprites)
 			{
-				code += sp.InitVars();
+				buf += sp.InitVars();
 			}
-			return code;
+			return buf;
 		}
 
 		public static bool Validate(List<Func<bool>> funcs) => funcs.All(f => f.Invoke());

@@ -222,11 +222,13 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>DEL "$(ProjectDir)bin\Debug\*.S"
+DEL "$(ProjectDir)bin\Debug\*.SGROM"
+DEL "$(ProjectDir)bin\Debug\*.sym"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>XCOPY "$(ProjectDir)bin\Debug" "$(SolutionDir)Build" /E /C /Y /F /I
+    <PostBuildEvent>DEL "$(SolutionDir)Build\*.*"
+XCOPY "$(ProjectDir)bin\Debug" "$(SolutionDir)Build" /E /C /Y /F /I
 DEL "$(SolutionDir)Build\*.pdb"</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -23,7 +23,7 @@ namespace GenesisEdit.Compiler
 		private static readonly Regex REGISTER_REGEX = new Regex("(\\*?A[0-7])|(D[0-7])");
 		private static readonly Regex NUMBER_REGEX = new Regex("(0x[0-9A-F]+)|([0-9]+)", RegexOptions.IgnoreCase);
 		//Assembler process things
-		private static readonly Tuple<string, string> ASM_CMD = new Tuple<string, string>("asm68k.exe", "/p /i /w /ov+ /oos+ /oop+ /oow+ /ooz+ /ooaq+ /oosq+ /oomq+ /ow+ %NAME%.S,%NAME%.BIN,%NAME%");
+		private static readonly Tuple<string, string> ASM_CMD = new Tuple<string, string>("asm68k.exe", "/p /i /w /ov+ /oos+ /oop+ /oow+ /ooz+ /ooaq+ /oosq+ /oomq+ /ow+ %NAME%.S,%NAME%.SGROM,%NAME%");
 		private static readonly Process ASSEMBLER;
 		private static string ASM_STDOUT_BUF;
 		//Macros to compile
@@ -40,16 +40,16 @@ namespace GenesisEdit.Compiler
 					FileName = ASM_CMD.Item1,
 					Arguments = ASM_CMD.Item2.Replace("%NAME%", FILE_NAME),
 					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					CreateNoWindow = true
+					CreateNoWindow = true,
+					RedirectStandardOutput = true
 				}
 			};
 		}
-		
+
 		public static void Compile(List<GenesisEvent> events, List<Variable> variables, List<Sprite> sprites, ROMInfo rom, Bitmap bg1, Bitmap bg2)
 		{
 			//Null checks
-			Utils.ThrowIfAnyNull(events, variables, sprites, rom, bg1, bg2);
+			Utils.ThrowIfAnyNull(events, variables, sprites, rom, bg1/*, bg2*/);
 			//Reset
 			ImageToGenesisConverter.Reset();
 			//Compile
@@ -100,12 +100,21 @@ namespace GenesisEdit.Compiler
 				Utils.Log($"Compiling Palettes");
 
 
-				if (Utils.GetColors(bg1).Concat(Utils.GetColors(bg2)).Distinct().Count() > 16)
+
+				IEnumerable<ushort> bgPal = Utils.GetColors(bg1).Concat(Utils.GetColors(bg2)).Distinct();
+				if (bgPal.Count() > 15)
 				{
-					throw new CompilerException($"Due to limitations, both backgrounds combined can only have 16 colors in total");
+					throw new CompilerException($"Due to limitations, both backgrounds combined can only have 16 colors in total (1st color is always transparent)");
 				}
 
 				ushort[,] palettes = new ushort[4, 16];
+
+
+				for (int c = 0; c < Math.Min(bgPal.Count(), 16); c++)
+				{
+					palettes[0, c] = bgPal.ToArray()[c];
+				}
+
 
 				Utils.Log($"Filling in templates");
 
@@ -156,7 +165,7 @@ namespace GenesisEdit.Compiler
 						}
 						if (et.Equals(EventType.ON_USER_INIT))
 						{
-							codeS += Utils.InitSpriteVars(codeS, sprites);
+							buf += Utils.InitSpriteVars(sprites);
 						}
 						codeS = codeS.Replace(Utils.EVENT_REPLACERS[et], buf);
 					}
@@ -172,8 +181,9 @@ namespace GenesisEdit.Compiler
 					{ "%GE_NUM_SPRITE_CHARS%", ImageToGenesisConverter.TOTAL_SP_CHARS.ToString() },
 					{ "%GE_USERVAR%", string.Join(Environment.NewLine, compiledVars) },
 					{ "%GE_SPRITES%", "SPRITEGFX:" +  Environment.NewLine + string.Join(Environment.NewLine, compiledSprites.Select(cs => cs.Item1)) },
-					{ "%GE_BG%", "MAPGFX:" +  Environment.NewLine + string.Join(Environment.NewLine, compiledBGs.Select(cs => cs.Item1)) },
-					{ "%GE_BG_LAYOUT%", $"CHARGFX:{Environment.NewLine}{compiledBGs.First().Item2}{Environment.NewLine}CHARGFX2:{Environment.NewLine}{compiledBGs.Last().Item2}" },
+					{ "%GE_BG%", "MAPGFX:" +  Environment.NewLine + string.Join(Environment.NewLine, compiledBGs.Select(cs => cs.Item1).Distinct()) },
+					//BG2 not supported yet!
+					{ "%GE_BG_LAYOUT%", $"CHARGFX:{Environment.NewLine}{compiledBGs.First().Item2}"/*{Environment.NewLine}CHARGFX2:{Environment.NewLine}{compiledBGs.Last().Item2}"*/ },
 					{ "%GE_PALETTES%", Utils.FormatPalettes(palettes) }
 				});
 
@@ -226,7 +236,6 @@ namespace GenesisEdit.Compiler
 		private static void CheckAssemblerOutput()
 		{
 			Console.WriteLine("Output:");
-			ASM_STDOUT_BUF = ASSEMBLER.StandardOutput.ReadToEnd();
 			Console.WriteLine(ASM_STDOUT_BUF);
 			string[] lines = Utils.GetLines(ASM_STDOUT_BUF);
 			const string ERROR_IDENTIFIER = ": Error :";
@@ -240,13 +249,25 @@ namespace GenesisEdit.Compiler
 		{
 			Task t = Task.Run(() =>
 			{
+				Thread.CurrentThread.Name = "Assembler Thread";
+				Utils.Log("Assembling", Thread.CurrentThread.Name);
 				ASM_STDOUT_BUF = string.Empty;
 				ASSEMBLER.Start();
+				Utils.Log("Waiting for assembler to finish...", Thread.CurrentThread.Name);
 				ASSEMBLER.WaitForExit();
+				Utils.Log("Done!", Thread.CurrentThread.Name);
 			});
 			//Wait for task to complete without freezing UI
 			while (!t.IsCompleted)
 			{
+				try
+				{
+					ASM_STDOUT_BUF += ASSEMBLER.StandardOutput.ReadToEnd();
+				}
+				catch
+				{
+					//Nothing
+				}
 				MainWindow.INSTACE.Invoke(new Action(() => Application.DoEvents()));
 			}
 		}

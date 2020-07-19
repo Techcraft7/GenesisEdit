@@ -94,6 +94,7 @@ namespace GenesisEdit
 			//Update
 			MainWindow_Resize(null, null);
 			UpdateEvents();
+			UpdateROMInfo();
 		}
 
 		private void NewButton_Click(object sender, EventArgs e)
