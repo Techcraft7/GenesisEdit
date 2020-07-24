@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GenesisEdit.FIleHandler
+namespace GenesisEdit.FileHandler
 {
 	internal class INIFile
 	{
@@ -42,7 +42,7 @@ namespace GenesisEdit.FIleHandler
 			}
 			INIFile ini = new INIFile
 			{
-				Sections = Utils.MatchCollectionToList(FileHandler.sectionRegex.Matches(text)).Select(m => INISection.FromText(m.Value)).ToList()
+				Sections = Utils.MatchCollectionToList(FileIOHandler.sectionRegex.Matches(text)).Select(m => INISection.FromText(m.Value)).ToList()
 			};
 			fs.Close();
 			return ini;

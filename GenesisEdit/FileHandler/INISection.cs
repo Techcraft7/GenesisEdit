@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Markup;
 
-namespace GenesisEdit.FIleHandler
+namespace GenesisEdit.FileHandler
 {
 	internal class INISection
 	{
@@ -39,7 +39,7 @@ namespace GenesisEdit.FIleHandler
 
 		public static INISection FromText(string s)
 		{
-			if (!FileHandler.sectionRegex.IsMatch(s))
+			if (!FileIOHandler.sectionRegex.IsMatch(s))
 			{
 				throw new ArgumentException("Invalid INI Section");
 			}

@@ -93,7 +93,7 @@
     <Compile Include="Controls\SpriteControl.Designer.cs">
       <DependentUpon>SpriteControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="FileHandler\FileHandler.cs" />
+    <Compile Include="FileHandler\FileIOHandler.cs" />
     <Compile Include="Compiler\ICompileable.cs" />
     <Compile Include="FileHandler\INISection.cs" />
     <Compile Include="FileHandler\INIFile.cs" />
@@ -234,7 +234,8 @@
   <PropertyGroup>
     <PreBuildEvent>DEL "$(ProjectDir)bin\Debug\*.S"
 DEL "$(ProjectDir)bin\Debug\*.SGROM"
-DEL "$(ProjectDir)bin\Debug\*.sym"</PreBuildEvent>
+DEL "$(ProjectDir)bin\Debug\*.sym"
+COPY /Y "$(SolutionDir)Build\asm68k.exe" "$(ProjectDir)bin\Debug\asm68k.exe"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>DEL "$(SolutionDir)Build\*.*"

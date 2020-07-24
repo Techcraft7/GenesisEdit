@@ -8,9 +8,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace GenesisEdit.FIleHandler
+namespace GenesisEdit.FileHandler
 {
-	internal static class FileHandler
+	internal static class FileIOHandler
 	{
 		public static readonly Regex sectionRegex = new Regex("\\[[A-Z_]{1}([A-Z0-9_])*\\](\\r?\\n)(((([^\\r\\n= ]+=[^\\r\\n]+)|(\\s*;[^\\r\\n]*))(\\r?\\n)?))*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
 

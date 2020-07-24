@@ -116,8 +116,9 @@
 			// 
 			// VariablesButton
 			// 
+			this.VariablesButton.Image = ((System.Drawing.Image)(resources.GetObject("VariablesButton.Image")));
 			this.VariablesButton.Name = "VariablesButton";
-			this.VariablesButton.Size = new System.Drawing.Size(65, 20);
+			this.VariablesButton.Size = new System.Drawing.Size(81, 20);
 			this.VariablesButton.Text = "Variables";
 			this.VariablesButton.Click += new System.EventHandler(this.VariablesButton_Click);
 			// 
@@ -129,8 +130,9 @@
             this.SubtitleBox,
             this.Subtitle2Box,
             this.ProdNBox});
+			this.ROMInfoButton.Image = ((System.Drawing.Image)(resources.GetObject("ROMInfoButton.Image")));
 			this.ROMInfoButton.Name = "ROMInfoButton";
-			this.ROMInfoButton.Size = new System.Drawing.Size(70, 20);
+			this.ROMInfoButton.Size = new System.Drawing.Size(86, 20);
 			this.ROMInfoButton.Text = "ROM Info";
 			this.ROMInfoButton.DropDownClosed += new System.EventHandler(this.ROMInfoButton_DropDownClosed);
 			// 
@@ -176,29 +178,33 @@
 			// 
 			// SpritesButton
 			// 
+			this.SpritesButton.Image = ((System.Drawing.Image)(resources.GetObject("SpritesButton.Image")));
 			this.SpritesButton.Name = "SpritesButton";
-			this.SpritesButton.Size = new System.Drawing.Size(54, 20);
+			this.SpritesButton.Size = new System.Drawing.Size(70, 20);
 			this.SpritesButton.Text = "Sprites";
 			this.SpritesButton.Click += new System.EventHandler(this.SpritesButton_Click);
 			// 
 			// BackgroundsButton
 			// 
+			this.BackgroundsButton.Image = ((System.Drawing.Image)(resources.GetObject("BackgroundsButton.Image")));
 			this.BackgroundsButton.Name = "BackgroundsButton";
-			this.BackgroundsButton.Size = new System.Drawing.Size(88, 20);
+			this.BackgroundsButton.Size = new System.Drawing.Size(104, 20);
 			this.BackgroundsButton.Text = "Backgrounds";
 			this.BackgroundsButton.Click += new System.EventHandler(this.BackgroundsButton_Click);
 			// 
 			// SettingsButton
 			// 
+			this.SettingsButton.Image = ((System.Drawing.Image)(resources.GetObject("SettingsButton.Image")));
 			this.SettingsButton.Name = "SettingsButton";
-			this.SettingsButton.Size = new System.Drawing.Size(61, 20);
+			this.SettingsButton.Size = new System.Drawing.Size(77, 20);
 			this.SettingsButton.Text = "Settings";
 			this.SettingsButton.Click += new System.EventHandler(this.SettingsButton_Click);
 			// 
 			// HelpButton
 			// 
+			this.HelpButton.Image = ((System.Drawing.Image)(resources.GetObject("HelpButton.Image")));
 			this.HelpButton.Name = "HelpButton";
-			this.HelpButton.Size = new System.Drawing.Size(44, 20);
+			this.HelpButton.Size = new System.Drawing.Size(60, 20);
 			this.HelpButton.Text = "Help";
 			this.HelpButton.Click += new System.EventHandler(this.HelpButton_Click);
 			// 

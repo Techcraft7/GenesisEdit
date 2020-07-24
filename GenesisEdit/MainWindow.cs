@@ -1,6 +1,6 @@
 ﻿using GenesisEdit.Compiler;
 using GenesisEdit.Controls;
-using GenesisEdit.FIleHandler;
+using GenesisEdit.FileHandler;
 using GenesisEdit.Forms;
 using GenesisEdit.Properties;
 using System;
@@ -53,12 +53,15 @@ namespace GenesisEdit
 		private Bitmap BG1 => backgroundEditor.BG1;
 		private Bitmap BG2 => backgroundEditor.BG2;
 
-		//GUIS
+		//GUI's
+#pragma warning disable IDE0051 //So Visual Studio doesnt yell at us that these are not used
+		private ProgressWindow ProgressWindow => ProgressHelper.PW;
 		private readonly SettingsWindow settings = new SettingsWindow();
 		private readonly VarEditor varEditor = new VarEditor();
 		private readonly HelpWindow helpWindow = new HelpWindow();
 		private readonly SpriteEditor spriteEditor = new SpriteEditor();
 		private readonly BackgroundEditor backgroundEditor = new BackgroundEditor();
+#pragma warning restore IDE0051
 
 		public static MainWindow INSTACE;
 		public static bool EVENT_LIST_STALE = false;
@@ -145,7 +148,7 @@ namespace GenesisEdit
 					File.Delete(saveDialog.FileName);
 				}
 				file = File.Open(saveDialog.FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-				FileHandler.SaveFile(file, rom, Variables, Events);
+				FileIOHandler.SaveFile(file, rom, Variables, Events);
 			}
 		}
 
