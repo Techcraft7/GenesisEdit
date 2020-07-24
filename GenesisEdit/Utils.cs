@@ -21,7 +21,7 @@ namespace GenesisEdit
 		public static readonly Regex SPLIT_BY_DOT = new Regex(".", RegexOptions.IgnoreCase | RegexOptions.Multiline);
 		public static readonly Regex SPLIT_BY_BACKSLASH_S = new Regex("\\s", RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
-		//Replacers
+		//Contstants
 		public static readonly Dictionary<EventType, string> EVENT_REPLACERS = new Dictionary<EventType, string>()
 		{
 			{ EventType.ON_USER_INIT, "%GE_INIT%" },
@@ -29,6 +29,7 @@ namespace GenesisEdit
 			{ EventType.ON_VBI, "%GE_ONVBI%" },
 			{ EventType.ON_PRESS, "%GE_ON_PRESS_{0}%" }
 		};
+		public const string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 		public static string[] SplitByRegex(Regex r, string s)
 		{
@@ -136,6 +137,7 @@ namespace GenesisEdit
 
 		public static void Log(string v) => Console.WriteLine($"[{new StackTrace().GetFrame(1).GetMethod().DeclaringType.Name}] {v}");
 		public static void Log(string v, string p) => Console.WriteLine($"[{p}] {v}");
+		public static void Log(Exception e) => Log($"{e.GetType()}: {e.Message}\n{e.StackTrace}");
 
 		public static Color FromUShort(ushort v)
 		{
@@ -160,7 +162,7 @@ namespace GenesisEdit
 
 		public static string ReplaceAll(string s, Dictionary<string, string> vs)
 		{
-			foreach (var kv in vs)
+			foreach (KeyValuePair<string, string> kv in vs)
 			{
 				s = s.Replace(kv.Key, kv.Value);
 			}
@@ -191,7 +193,7 @@ namespace GenesisEdit
 				new Func<string, bool>(s => !s.StartsWith("GE_")),
 				new Func<string, bool>(s => IsFullMatch(new Regex("[A-Z_]{1}[A-Z_0-9]*", RegexOptions.IgnoreCase), name))
 			};
-			return name == null ? false : funcs.All(f => f.Invoke(name));
+			return name != null && funcs.All(f => f.Invoke(name));
 		}
 
 		public static IEnumerable<T> SkipLast<T>(IEnumerable<T> list, int num) => list.Reverse().Skip(num).Reverse();
@@ -266,5 +268,42 @@ namespace GenesisEdit
 		//Used for Save/Open File Dialogs
 		public static string AutoFilter(params string[] ext) => string.Join("|", ext.Select(s => $"{s.ToUpper()} Files (*.{s})|*.{s}"));
 
+		/// <summary>
+		/// Runs tasks in order
+		/// </summary>
+		/// <param name="tasks">Tasks to run</param>
+		/// <returns><see langword="true"/> if all tasks run without an exception</returns>
+		/// <exception cref="ArgumentNullException">If tasks is <see langword="null"/> or any element of tasks is null</exception>
+		public static bool RunTasksInOrder(params Task[] tasks)
+		{
+			tasks = tasks ?? throw new ArgumentNullException(nameof(tasks));
+			if (tasks.Any(t => t == null))
+			{
+				throw new ArgumentNullException($"Null {nameof(Task)}(s) are not allowed!");
+			}
+			foreach (Task t in tasks)
+			{
+				try
+				{
+					t.RunSynchronously();
+				}
+				catch (Exception e)
+				{
+					Log(e);
+				}
+			}
+			return tasks.All(t => t.Exception == null);
+		}
+
+		/// <summary>
+		/// Adds spaces before upper case letters
+		/// </summary>
+		/// <param name="s">PascalCaseText</param>
+		/// <returns>Pascal Case Text With Spaces</returns>
+		public static string AddSpacesToPascalCase(string s)
+		{
+			ALPHABET.ToUpper().ToList().ForEach((c) => s = string.Join($" {c}", s.Split(c)));
+			return s.Substring(1);
+		}
 	}
 }

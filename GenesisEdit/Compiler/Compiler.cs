@@ -1,4 +1,5 @@
 ﻿using GenesisEdit.Compiler.Macros;
+using GenesisEdit.Forms;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ using System.Windows.Forms;
 
 namespace GenesisEdit.Compiler
 {
+	using static ProgressHelper;
 	internal class Compiler
 	{
 		private const string FILE_NAME = "CODE";
@@ -32,6 +34,7 @@ namespace GenesisEdit.Compiler
 		//Put block macros first, then non-blocks after
 		static Compiler()
 		{
+			Utils.Log("Intitializing Compiler");
 			MACROS = MACROS.OrderByDescending(m => Convert.ToBoolean(m.GetType().IsSubclassOf(typeof(BlockMacro)))).ToArray();
 			ASSEMBLER = new Process()
 			{
@@ -44,31 +47,63 @@ namespace GenesisEdit.Compiler
 					RedirectStandardOutput = true
 				}
 			};
+			Utils.Log("Done!");
 		}
 
 		public static void Compile(List<GenesisEvent> events, List<Variable> variables, List<Sprite> sprites, ROMInfo rom, Bitmap bg1, Bitmap bg2)
 		{
-			//Null checks
-			Utils.ThrowIfAnyNull(events, variables, sprites, rom, bg1/*, bg2*/);
-			//Reset
-			ImageToGenesisConverter.Reset();
-			//Compile
-			foreach (object obj in new object[] { events, variables, sprites })
+			PW.Show();
+			while (!PW.IsHandleCreated)
 			{
-				if (obj == null)
-				{
-					throw new ArgumentNullException();
-				}
+				Application.DoEvents();
 			}
+			ResetProgress();
+			// "//" = need to add "PROGRESS++;" "///" = added "PROGRESS++;"
+			///+1 null checks
+			///+1 reset
+			///+Enum.GetValues(typeof(EventType)).Length sort by type
+			///+1 check for ON_PRESS with NONE as button
+			///+1 check for invalid event names
+			///+1 toCompile -> compiled
+			///+1 validate sprites
+			///+1 compiling sprites
+			///+2 Expand BG's
+			///+bgs.Select(s => (s.Texture.Width * s.Texture.Height) / 64).Sum() * 2 get BG chars & get matches
+			///+sprites.Select(s => (s.Texture.Width * s.Texture.Height) / 64).Sum() * 2 get chars & convert to sprite
+			///+toRem.Count() collapse chars
+			///+1 add chars
+			///+1 check bg palettes
+			///+1 get palettes
+			///+Enum.GetValues(typeof(EventType)).Length fill in events
+			///+1 add variables
+			///+1 add sprite variables
+			///+1 rom data
+			///+1 assemble
+			//Null checks
+			//UpdateProgress($"Null checks");
+			Utils.ThrowIfAnyNull(events, variables, sprites, rom, bg1, bg2);
+			ENABLED = true;
+			ACTIONS = 16 + (Enum.GetValues(typeof(EventType)).Length * 2) + (new Bitmap[] { bg1, bg2 }.Select(b => (b.Width * b.Height) / 64).Sum() * 2) + (sprites.Select(s => (s.Texture.Width * s.Texture.Height) / 64).Sum() * 2);
+
+			long ms = DateTime.Now.Ticks / 10000;
+			PROGRESS++;
+			//Reset
+			UpdateProgress($"Resetting {Utils.AddSpacesToPascalCase(nameof(ImageToGenesisConverter))}");
+			ImageToGenesisConverter.Reset();
+			PROGRESS++;
+			//Compile
+			Utils.Log("Compiling");
 			try
 			{
-				long ms = DateTime.Now.Ticks / 10000;
-				Utils.Log("Compiling");
+				Utils.Log("Sorting events by type");
 				Dictionary<EventType, GenesisEvent[]> toCompile = new Dictionary<EventType, GenesisEvent[]>();
 				foreach (EventType type in Enum.GetValues(typeof(EventType)))
 				{
+					UpdateProgress("Sorting events by type");
 					toCompile.Add(type, events.Where(e => e.Type.Equals(type)).ToArray());
+					PROGRESS++;
 				}
+				UpdateProgress($"Checking for {Utils.FormatEnum(EventType.ON_PRESS.ToString())} event with {Utils.FormatEnum(Button.NONE.ToString())} as {nameof(GenesisEvent)}.{nameof(GenesisEvent.Button)}");
 				if (toCompile.TryGetValue(EventType.ON_PRESS, out GenesisEvent[] ges))
 				{
 					IEnumerable<GenesisEvent> vs = ges.Where(ge => ge.Button.Equals(Button.NONE));
@@ -77,43 +112,56 @@ namespace GenesisEdit.Compiler
 						throw new CompilerException($"Please specify a button for the following events:\n\t{string.Join("\n\t", vs.Select(e => e.Name))}");
 					}
 				}
+				PROGRESS++;
+				UpdateProgress($"Checking for invalid event names");
 				if (toCompile.Select(kv => kv.Value.Select(ge => ge.Name)).Any(l => l.Any(v => !Utils.IsValidIdentifier(v))))
 				{
 					throw new CompilerException("One or more event names were invalid!");
 				}
+				PROGRESS++;
+				UpdateProgress($"Compiling");
 				Dictionary<EventType, string[]> compiled = toCompile.ToDictionary(kv => kv.Key, kv => kv.Value.Select(e => e.Compile(variables)).ToArray());
-
+				PROGRESS++;
 				Utils.Log($"Compiling Sprites");
+				UpdateProgress($"Validating Sprites");
 				IEnumerable<Sprite> invalidSprites = sprites.Where(s => !s.Validate());
 				if (invalidSprites.Count() > 0)
 				{
 					throw new CompilerException($"The following sprites are invalid: {string.Join(", ", sprites.Select(s => s.Name))}");
 				}
+				PROGRESS++;
+				UpdateProgress($"Compiling sprites");
 				var compiledSprites = sprites.Select(s => ImageToGenesisConverter.CompileImage(s.Texture, false)).ToList();
+				PROGRESS++;
 				Utils.Log($"Compiling BG's");
+
 				Utils.Log("Expanding BG's");
+				UpdateProgress($"Expanding BG1");
 				bg1 = ImageToGenesisConverter.Expand(bg1);
+				PROGRESS++;
+				UpdateProgress($"Expanding BG2");
 				bg2 = ImageToGenesisConverter.Expand(bg2);
-
+				PROGRESS++;
 				var compiledBGs = new List<Bitmap>() { bg1, bg2 }.Select(bg => ImageToGenesisConverter.CompileImage(bg, true)).ToList();
-
 				Utils.Log($"Compiling Palettes");
 
-
-
+				UpdateProgress($"Checking BG palette");
 				IEnumerable<ushort> bgPal = Utils.GetColors(bg1).Concat(Utils.GetColors(bg2)).Distinct();
-				if (bgPal.Count() > 15)
+				if (bgPal.Count() > 16)
 				{
-					throw new CompilerException($"Due to limitations, both backgrounds combined can only have 16 colors in total (1st color is always transparent)");
+					throw new CompilerException($"Due to limitations, both backgrounds combined can only have 16 colors in total (1st color is always transparent, so 15 other colors)");
 				}
+				PROGRESS++;
+
+				UpdateProgress($"Getting palettes");
 
 				ushort[,] palettes = new ushort[4, 16];
-
 
 				for (int c = 0; c < Math.Min(bgPal.Count(), 16); c++)
 				{
 					palettes[0, c] = bgPal.ToArray()[c];
 				}
+				PROGRESS++;
 
 
 				Utils.Log($"Filling in templates");
@@ -122,8 +170,9 @@ namespace GenesisEdit.Compiler
 				string codeS = Encoding.UTF8.GetString(Convert.FromBase64String(Resources.CODE_TEMPLATE));
 
 				Utils.Log($"Filling in events");
-				foreach (EventType et in (EventType[])Enum.GetValues(typeof(EventType)))
+				foreach (EventType et in Enum.GetValues(typeof(EventType)))
 				{
+					UpdateProgress($"Filling in events of type {Utils.FormatEnum(et.ToString())}");
 					if (!toCompile.ContainsKey(et))
 					{
 						continue;
@@ -134,6 +183,7 @@ namespace GenesisEdit.Compiler
 						Dictionary<Button, List<string>> sorted = new Dictionary<Button, List<string>>();
 						foreach (var kv in codeForButtons)
 						{
+							UpdateProgress($"Filling in button {Utils.FormatEnum(kv.Item1.ToString())}");
 							if (sorted.ContainsKey(kv.Item1))
 							{
 								sorted[kv.Item1].Add(kv.Item2);
@@ -169,11 +219,17 @@ namespace GenesisEdit.Compiler
 						}
 						codeS = codeS.Replace(Utils.EVENT_REPLACERS[et], buf);
 					}
+					PROGRESS++;
 				}
+				UpdateProgress($"Adding variables");
 				List<string> compiledVars = variables.Select(v => v.Compile(null)).ToList();
 				compiledVars.AddRange(sprites.Select(s => string.Join(Environment.NewLine, s.GetVariables())));
+				PROGRESS++;
+				UpdateProgress("Defining sprite variables");
 				Utils.Log("Defining sprite variables");
 				sprites.ForEach(s => compiledVars.AddRange(s.GetVariables()));
+				PROGRESS++;
+				UpdateProgress("Filling in other data");
 				Utils.Log("Filling in other data");
 				codeS = Utils.ReplaceAll(codeS, new Dictionary<string, string>()
 				{
@@ -182,11 +238,13 @@ namespace GenesisEdit.Compiler
 					{ "%GE_USERVAR%", string.Join(Environment.NewLine, compiledVars) },
 					{ "%GE_SPRITES%", "SPRITEGFX:" +  Environment.NewLine + string.Join(Environment.NewLine, compiledSprites.Select(cs => cs.Item1)) },
 					{ "%GE_BG%", "MAPGFX:" +  Environment.NewLine + string.Join(Environment.NewLine, compiledBGs.Select(cs => cs.Item1).Distinct()) },
-					//BG2 not supported yet!
+					//BG2 broken :(
 					{ "%GE_BG_LAYOUT%", $"CHARGFX:{Environment.NewLine}{compiledBGs.First().Item2}"/*{Environment.NewLine}CHARGFX2:{Environment.NewLine}{compiledBGs.Last().Item2}"*/ },
 					{ "%GE_PALETTES%", Utils.FormatPalettes(palettes) }
 				});
+				PROGRESS++;
 
+				UpdateProgress("Filling in ROM data");
 				Utils.Log($"Filling in System Template");
 				string systemS = Encoding.UTF8.GetString(Convert.FromBase64String(Resources.SYSTEM_CODE));
 				systemS = Utils.ReplaceAll(systemS, new Dictionary<string, string>()
@@ -197,7 +255,9 @@ namespace GenesisEdit.Compiler
 					{ "%GE_ROM_SUBTITLE_2_____________________________%", rom.Subtitle2 },
 					{ "%GE_ROM_PROD#%", rom.ProductNo }
 				});
+				PROGRESS++;
 
+				UpdateProgress("Writing to file");
 				Utils.Log($"Writing to file");
 				string[] systemSLines = Utils.GetLines(systemS);
 				string[] codeSLines = Utils.GetLines(codeS);
@@ -213,15 +273,18 @@ namespace GenesisEdit.Compiler
 				//systemSLines = systemSLines.Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
 				File.WriteAllLines(FILE_NAME + ".S", codeSLines);
 				File.WriteAllLines(SYSTEM_NAME, systemSLines);
-
+				PROGRESS++;
+				UpdateProgress("Assembling");
 				Utils.Log($"Assembling");
 				RunAssembler();
 				Utils.Log($"Assembler exited with code {ASSEMBLER.ExitCode}");
 				CheckAssemblerOutput();
-
+				PROGRESS++;
 				Utils.Log($"Done!");
 				long ms2 = DateTime.Now.Ticks / 10000;
 				Utils.Log($"Compiler finished in {((double)ms2 - ms) / 1000D} seconds");
+				PW.Invoke(new Action(() => PW.Close()));
+				ENABLED = false;
 			}
 			catch (CompilerException e)
 			{

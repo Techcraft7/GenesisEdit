@@ -168,7 +168,7 @@ MOVE.L	#42,D2";
 		public void ImageConvertTest()
 		{
 			const string path = @"C:\tmp\convtest.png";
-			//File.WriteAllBytes(path, Convert.FromBase64String(Resources.CONV_TEST));
+			File.WriteAllBytes(path, Convert.FromBase64String(Resources.CONV_TEST));
 			Bitmap b = ImageToGenesisConverter.Expand(new Bitmap(path));
 			//var spSD = ImageToGenesisConverter.CompileImage(b, false);
 			var bgSD = ImageToGenesisConverter.CompileImage(b, true);

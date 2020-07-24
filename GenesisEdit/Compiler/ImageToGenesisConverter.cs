@@ -8,9 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using SpriteData = System.Tuple<string, string>;
 using CharCompactData = System.Tuple<bool, bool, int>;
+using GenesisEdit.Forms;
 
 namespace GenesisEdit.Compiler
 {
+	using static ProgressHelper;
 	internal static class ImageToGenesisConverter
 	{
 		public static ushort[] PAL_BG1 { get; private set; }
@@ -131,7 +133,6 @@ namespace GenesisEdit.Compiler
 		public static List<Bitmap> GetChars(Bitmap b, out string layout, bool spriteMode = true)
 		{
 			Utils.Log("Getting characters");
-
 			b = b ?? throw new ArgumentNullException(nameof(b));
 			layout = string.Empty;
 
@@ -146,18 +147,21 @@ namespace GenesisEdit.Compiler
 			//6 7 8
 
 			Utils.Log("Splitting");
-
+			ACTIONS += (b.Width * b.Height) / 64;
 			for (int y = 0; y < b.Height; y += 8)
 			{
 				for (int x = 0; x < b.Width; x += 8)
 				{
+					UpdateProgress($"Splitting: {chars.Count} chars found!");
 					Bitmap c = new Bitmap(8, 8, PixelFormat.Format32bppArgb);
 					Utils.ForeachPixel(c, (cx, cy) => c.SetPixel(cx, cy, b.GetPixel(x + cx, y + cy)));
 					chars.Add(c);
+					PROGRESS++;
 				}
 			}
 			if (spriteMode)
 			{
+				UpdateProgress("Converting to sprite format");
 				Utils.Log("Converting to sprite format");
 				//The first row are multiples of 3
 				//the second row are multiples of 3 + 1
@@ -169,7 +173,9 @@ namespace GenesisEdit.Compiler
 				Bitmap[] temp = new Bitmap[chars.Count];
 				for (int i = 0; i < chars.Count; i++)
 				{
+					UpdateProgress($"Transforming {i + 1} -> {indexes[i] + 1}");
 					temp[i] = chars[indexes[i]];
+					PROGRESS++;
 				}
 				layout = null; //sprites dont need this
 				return temp.ToList();
@@ -187,9 +193,11 @@ namespace GenesisEdit.Compiler
 			Utils.Log("Seaching for matches");
 
 			List<CharCompactData> compacted = new List<CharCompactData>();
-
+			UpdateProgress("Compacting");
+			ACTIONS += chars.Count;
 			for (int i = 0; i < chars.Count; i++)
 			{
+				UpdateProgress($"Compacting char {i + 1}");
 				if (i == 0)
 				{
 					compacted.Add(new CharCompactData(false, false, 0));
@@ -228,11 +236,13 @@ namespace GenesisEdit.Compiler
 				}
 				Utils.Log($"Char {i} matches {match}. HF: {hFlip} VF: {vFlip}");
 				compacted.Add(new CharCompactData(hFlip, vFlip, match));
+				PROGRESS++;
 			}
 			//Get all chars that arent indexed in the compacted
 			IEnumerable<int> toRemove = Enumerable.Range(0, chars.Count).Where(index => !compacted.Select(cd => cd.Item3).Contains(index)).Select(index => index);
-
-			Utils.Log($"Removing duplicate chars: {string.Join(", ", toRemove)}");
+			ACTIONS += toRemove.Count();
+			UpdateProgress("Collapsing");
+			Utils.Log($"Removing {toRemove.Count()} duplicate chars");
 			for (int i = 0; i < toRemove.Count(); i++)
 			{
 				int rem = toRemove.ToArray()[i];
@@ -243,11 +253,13 @@ namespace GenesisEdit.Compiler
 				toRemove = toRemove.ToArray().Select(v => v > rem ? v - 1 : v);
 				//now apply the same concept to the comacted data
 				compacted = compacted.Select(cd => new CharCompactData(cd.Item1, cd.Item2, cd.Item3 > rem ? cd.Item3 - 1 : cd.Item3)).ToList();
+				UpdateProgress($"Collapsing: {toRemove.Count()} left to remove");
+				PROGRESS++;
 			}
 
 			Utils.Log($"Done {chars.Count} chars left!");
 
-
+			UpdateProgress("Adding chars");
 
 			int h = b.Height / 8;
 			int w = b.Width / 8;
@@ -267,7 +279,7 @@ namespace GenesisEdit.Compiler
 				}
 				layout += Environment.NewLine;
 			}
-
+			PROGRESS++;
 			return chars;
 		}
 
