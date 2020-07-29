@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using GenesisEdit;
 using System.Drawing.Imaging;
 using System.IO;
-using GenesisEdit.FIleHandler;
+using GenesisEdit.FileHandler;
 using GenesisEdit.Compiler;
 using GenesisEdit.Compiler.Macros;
 using System.Collections.Generic;

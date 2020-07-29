@@ -55,7 +55,6 @@ namespace GenesisEdit
 
 		//GUI's
 #pragma warning disable IDE0051 //So Visual Studio doesnt yell at us that these are not used
-		private ProgressWindow ProgressWindow => ProgressHelper.PW;
 		private readonly SettingsWindow settings = new SettingsWindow();
 		private readonly VarEditor varEditor = new VarEditor();
 		private readonly HelpWindow helpWindow = new HelpWindow();
@@ -162,53 +161,62 @@ namespace GenesisEdit
 			UpdateTheme();
 		}
 
-		private void UpdateTheme()
+		public void UpdateTheme()
 		{
 			byte theme = Settings.Default.Theme;
 			foreach (Form f in GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public).Where(f => f.FieldType.IsSubclassOf(typeof(Form))).Select(f => f.GetValue(this)).Concat(new Form[] { this }))
 			{
-				foreach (Control c in f.Controls)
+				if (f == null)
 				{
-					//Fix some controls because the render weird
-					bool skip = false;
-					foreach (Type t in new Type[] { typeof(ButtonControl), typeof(ComboBox) })
-					{
-						if (c.GetType().IsEquivalentTo(t))
-						{
-							skip = true;
-							break;
-						}
-					}
-					if (skip)
-					{
-						continue;
-					}
-					//Try to get color
-					Color color;
-					try
-					{
-						color = THEME[theme];
-					}
-					catch
-					{
-						Utils.Log("Error loading theme!");
-						return;
-					}
-					//Convert to black and white and if it is below a threshold use white text to make it readable
-					int bw = new List<int>() { color.R, color.G, color.B }.Sum() / 3;
-					if (bw < 75)
-					{
-						defaultFG = Color.White;
-					}
-					else
-					{
-						defaultFG = Color.Black;
-					}
-					c.ForeColor = defaultFG;
-					c.BackColor = color;
+					continue;
 				}
-				f.BackColor = THEME[theme];
+				SetTheme(f, theme);
 			}
+		}
+
+		public void SetTheme(Form f, byte theme)
+		{
+			foreach (Control c in f.Controls)
+			{
+				//Fix some controls because the render weird
+				bool skip = false;
+				foreach (Type t in new Type[] { typeof(ButtonControl), typeof(ComboBox) })
+				{
+					if (c.GetType().IsEquivalentTo(t))
+					{
+						skip = true;
+						break;
+					}
+				}
+				if (skip)
+				{
+					continue;
+				}
+				//Try to get color
+				Color color;
+				try
+				{
+					color = THEME[theme];
+				}
+				catch
+				{
+					Utils.Log("Error loading theme!");
+					return;
+				}
+				//Convert to black and white and if it is below a threshold use white text to make it readable
+				int bw = new List<int>() { color.R, color.G, color.B }.Sum() / 3;
+				if (bw < 75)
+				{
+					defaultFG = Color.White;
+				}
+				else
+				{
+					defaultFG = Color.Black;
+				}
+				c.ForeColor = defaultFG;
+				c.BackColor = color;
+			}
+			f.BackColor = THEME[theme];
 		}
 
 		private void Compile()
@@ -348,13 +356,22 @@ namespace GenesisEdit
 		private void UpdateROMInfo()
 		{
 			rom.Title = TitleBox.Text.PadRight(16, ' ');
+			rom.Title = rom.Title.Substring(0, Math.Min(rom.Title.Length, TitleBox.MaxLength));
+
 			rom.AuthorAndDate = AuthorBox.Text.PadRight(16, ' ');
+			rom.AuthorAndDate = rom.AuthorAndDate.Substring(0, Math.Min(rom.AuthorAndDate.Length, AuthorBox.MaxLength));
+
 			rom.Subtitle = SubtitleBox.Text.PadRight(48, ' ');
+			rom.Subtitle = rom.Subtitle.Substring(0, Math.Min(rom.Subtitle.Length, SubtitleBox.MaxLength));
+
 			rom.Subtitle2 = Subtitle2Box.Text.PadRight(48, ' ');
+			rom.Subtitle2 = rom.Subtitle2.Substring(0, Math.Min(rom.Subtitle2.Length, Subtitle2Box.MaxLength));
+
 			rom.ProductNo = ProdNBox.Text.PadRight(14, ' ');
+			rom.ProductNo = rom.ProductNo.Substring(0, Math.Min(rom.ProductNo.Length, ProdNBox.MaxLength));
 		}
 
-		private void EventSel_SelectedIndexChanged(object sender, EventArgs e) => CodeBox.Text = Events.Find(ge => ge.Name.Equals(EventSel.SelectedItem ?? INVALID_NAME)).Code;
+		private void EventSel_dIndexChanged(object sender, EventArgs e) => CodeBox.Text = Events.Find(ge => ge.Name.Equals(EventSel.SelectedItem ?? INVALID_NAME)).Code;
 		private void EventsList_ControlAdded(object sender, ControlEventArgs e) => UpdateEvents();
 		private void EventsList_ControlRemoved(object sender, ControlEventArgs e) => UpdateEvents();
 

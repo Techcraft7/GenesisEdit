@@ -14,17 +14,13 @@ namespace GenesisEdit.Compiler
 		public static double PROGRESS = 0;
 		public static double ACTIONS = 0;
 
-		public static void ResetProgress()
+		public static void ResetProgress(string text)
 		{
-			if (!ENABLED)
-			{
-				return;
-			}
 			try
 			{
+				PW = new ProgressWindow(text);
 				PROGRESS = 0;
 				ACTIONS = 0;
-				PW.UpdateProgress(0);
 			}
 			catch
 			{

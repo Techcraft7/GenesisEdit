@@ -29,13 +29,12 @@ namespace GenesisEdit.Compiler
 		private static readonly Process ASSEMBLER;
 		private static string ASM_STDOUT_BUF;
 		//Macros to compile
-		private static readonly Macro[] MACROS = new Macro[] { new IfStatementMacro(), new SpriteMacro(), new IfModeMacro() };
+		private static readonly Macro[] MACROS = new Macro[] { new IfStatementMacro(), new SpriteMacro() };
 
 		//Put block macros first, then non-blocks after
 		static Compiler()
 		{
 			Utils.Log("Intitializing Compiler");
-			MACROS = MACROS.OrderByDescending(m => Convert.ToBoolean(m.GetType().IsSubclassOf(typeof(BlockMacro)))).ToArray();
 			ASSEMBLER = new Process()
 			{
 				StartInfo = new ProcessStartInfo()
@@ -52,12 +51,12 @@ namespace GenesisEdit.Compiler
 
 		public static void Compile(List<GenesisEvent> events, List<Variable> variables, List<Sprite> sprites, ROMInfo rom, Bitmap bg1, Bitmap bg2)
 		{
+			ResetProgress("Compiling...");
 			PW.Show();
 			while (!PW.IsHandleCreated)
 			{
 				Application.DoEvents();
 			}
-			ResetProgress();
 			// "//" = need to add "PROGRESS++;" "///" = added "PROGRESS++;"
 			///+1 null checks
 			///+1 reset

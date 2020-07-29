@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GenesisEdit.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -26,9 +27,10 @@ namespace GenesisEdit.Forms
 		{
 			try
 			{
-				Text = $"{text} ({Progress.Value / Progress.Maximum}%)";
+				int percent = (int)(amount * 100);
+				base.Text = $"{text} ({percent}%)";
 				Application.DoEvents();
-				Progress.Value = (int)(amount * 100);
+				Progress.Value = percent;
 				if (action != null)
 				{
 					ActionText.Text = $"{PROMPT}{Environment.NewLine}{action}";
@@ -43,6 +45,7 @@ namespace GenesisEdit.Forms
 		public ProgressWindow(string title)
 		{
 			InitializeComponent();
+			MainWindow.INSTACE.SetTheme(this, Settings.Default.Theme);
 			text = title;
 		}
 

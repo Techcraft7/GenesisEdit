@@ -77,7 +77,6 @@
     <Compile Include="Compiler\INameable.cs" />
     <Compile Include="Compiler\Macros\BlockMacro.cs" />
     <Compile Include="Compiler\Compiler.cs" />
-    <Compile Include="Compiler\Macros\IfModeMacro.cs" />
     <Compile Include="Compiler\Macros\SpriteMacro.cs" />
     <Compile Include="Compiler\ProgressHelper.cs" />
     <Compile Include="Compiler\Sprite.cs" />
