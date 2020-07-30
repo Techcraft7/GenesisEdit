@@ -138,6 +138,7 @@
 			// 
 			// TitleBox
 			// 
+			this.TitleBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.TitleBox.MaxLength = 16;
 			this.TitleBox.Name = "TitleBox";
 			this.TitleBox.Size = new System.Drawing.Size(100, 23);
@@ -145,6 +146,7 @@
 			// 
 			// AuthorBox
 			// 
+			this.AuthorBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.AuthorBox.MaxLength = 16;
 			this.AuthorBox.Name = "AuthorBox";
 			this.AuthorBox.Size = new System.Drawing.Size(100, 23);
@@ -152,6 +154,7 @@
 			// 
 			// SubtitleBox
 			// 
+			this.SubtitleBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.SubtitleBox.MaxLength = 48;
 			this.SubtitleBox.Name = "SubtitleBox";
 			this.SubtitleBox.Size = new System.Drawing.Size(100, 23);
@@ -159,6 +162,7 @@
 			// 
 			// Subtitle2Box
 			// 
+			this.Subtitle2Box.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.Subtitle2Box.MaxLength = 48;
 			this.Subtitle2Box.Name = "Subtitle2Box";
 			this.Subtitle2Box.Size = new System.Drawing.Size(100, 23);
@@ -166,6 +170,7 @@
 			// 
 			// ProdNBox
 			// 
+			this.ProdNBox.Font = new System.Drawing.Font("Segoe UI", 9F);
 			this.ProdNBox.MaxLength = 14;
 			this.ProdNBox.Name = "ProdNBox";
 			this.ProdNBox.Size = new System.Drawing.Size(100, 23);
@@ -254,7 +259,6 @@
 			this.EventSel.Name = "EventSel";
 			this.EventSel.Size = new System.Drawing.Size(490, 21);
 			this.EventSel.TabIndex = 5;
-			this.EventSel.SelectedIndexChanged += new System.EventHandler(this.EventSel_SelectedIndexChanged);
 			// 
 			// EventUpdater
 			// 
