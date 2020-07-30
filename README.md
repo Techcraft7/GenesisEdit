@@ -2,6 +2,12 @@
 
 An all in one editor for the Sega Genesis
 
+# Why not [SGDK](https://github.com/Stephane-D/SGDK)?
+
+It's your choice if you would rather code in C or assembly!
+
+Personally I think SGDK is an AMAZING project that you should try out!
+
 # Features
 
 ## Macros
@@ -73,7 +79,7 @@ Puting this into a table:
 | 1 | 4 | 7 |
 | 2 | 5 | 8 |
 
-#### Putting it all together
+#### Putting it all together (in C#)
 
 ```
 int[] indexes = Enumerable.Range(0, chars.Count).OrderBy(i => i % (b.Width / 8)).ToArray();
